@@ -420,24 +420,30 @@ async function initializeGameEngine() {
             if (tags.includes("Consumable") || tags.includes("Vision") || itemName.includes("Potion") || itemName.includes("Elixir") || itemName.includes("Ward") || itemName.includes("Scarecrow")) continue;
             if (itemName === "World Atlas" || itemName.includes("Rune Weaver") || itemName.includes("Bounty") || itemName.includes("Companion") || itemName.includes("Scorchclaw") || itemName.includes("Gustwalker") || itemName.includes("Mosstomper")) continue;
 
-            let itemTier = "Common"; 
+            // Determine structural item classification first
+const itemClasses = deriveItemClass(itemName, tags);
+let itemTier = "Common"; 
 
-            // Strict hierarchy: Total Gold values always overrule complex asset tag classifications
-            if (totalGold >= 2500) {
-                itemTier = "Legendary";
-            }
-            else if (["Slightly Magical Boots", "Boots", "B.F. Sword", "B. F. Sword", "Needlessly Large Rod", "Long Sword", "Dagger", "Ruby Crystal", "Amplifying Tome", "Faerie Charm", "Sapphire Crystal", "Cloth Armor", "Null-Magic Mantle"].includes(itemName)) {
-                itemTier = "Common";
-            }
-            else if (tags.includes("Lane") || tags.includes("Jungle") || itemName.includes("Doran's") || (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
-                itemTier = "Starter";
-            }
-            else if (totalGold >= 900 || tags.includes("Boots") || (totalGold > 500 && details.from && details.from.length > 0)) {
-                itemTier = "Epic";
-            }
-            else {
-                itemTier = "Common";
-            }
+// The Class List Rule: If it's a non-boot item listed in our class map, it's a full Legendary
+if (!itemClasses.includes("Boots") && !itemClasses.includes("Component")) {
+    itemTier = "Legendary";
+}
+// Fallback gold filters for anything else (components, starters, boots)
+else if (totalGold >= 2500) {
+    itemTier = "Legendary";
+}
+else if (["Slightly Magical Boots", "Boots", "B.F. Sword", "B. F. Sword", "Needlessly Large Rod", "Long Sword", "Dagger", "Ruby Crystal", "Amplifying Tome", "Faerie Charm", "Sapphire Crystal", "Cloth Armor", "Null-Magic Mantle"].includes(itemName)) {
+    itemTier = "Common";
+}
+else if (tags.includes("Lane") || tags.includes("Jungle") || itemName.includes("Doran's") || (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
+    itemTier = "Starter";
+}
+else if (totalGold >= 900 || tags.includes("Boots") || (totalGold > 500 && details.from && details.from.length > 0)) {
+    itemTier = "Epic";
+}
+else {
+    itemTier = "Common";
+}
 
             const cleanRecipe = [];
             if (details.from) {
@@ -700,9 +706,6 @@ resetBtn.addEventListener('click', () => {
 });
 
 initializeGameEngine();
-
-
-
 </script>
 </body>
 </html>
