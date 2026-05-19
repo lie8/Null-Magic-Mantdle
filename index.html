@@ -397,17 +397,20 @@ function processItemStats(details) {
 }
 
 function deriveItemClass(itemName, tags) {
+    // 1. Instantly classify any item containing "Doran's" into its own custom pool
+    if (itemName.includes("Doran's")) {
+        return ["Doran's Item"];
+    }
+
     if (tags.includes("Boots") || itemName.includes("Boots") || itemName === "Plated Steelcaps" || itemName === "Mercury's Treads") {
         return ["Boots"];
     }
     
     const assignedClasses = [];
-    const lowerItemName = itemName.toLowerCase(); // Convert target to lowercase
+    const lowerItemName = itemName.toLowerCase();
 
     for (const [className, itemNamesList] of Object.entries(ITEM_CLASS_MAPS)) {
-        // Convert array strings to lowercase during validation check
         const lowerClassList = itemNamesList.map(name => name.toLowerCase());
-        
         if (lowerClassList.includes(lowerItemName)) {
             assignedClasses.push(className);
         }
@@ -440,18 +443,20 @@ async function initializeGameEngine() {
 const itemClasses = deriveItemClass(itemName, tags);
 let itemTier = "Common"; 
 
-// The Class List Rule: If it's a non-boot item listed in our class map, it's a full Legendary
-if (!itemClasses.includes("Boots") && !itemClasses.includes("Component")) {
+// 1. Force all Doran's items to explicitly be Starter tier
+if (itemName.includes("Doran's")) {
+    itemTier = "Starter";
+}
+else if (!itemClasses.includes("Boots") && !itemClasses.includes("Component")) {
     itemTier = "Legendary";
 }
-// Fallback gold filters for anything else (components, starters, boots)
-else if (totalGold >= 2500) {
+else if (totalGold >= 2000) {
     itemTier = "Legendary";
 }
 else if (["Slightly Magical Boots", "Boots", "B.F. Sword", "B. F. Sword", "Needlessly Large Rod", "Long Sword", "Dagger", "Ruby Crystal", "Amplifying Tome", "Faerie Charm", "Sapphire Crystal", "Cloth Armor", "Null-Magic Mantle"].includes(itemName)) {
     itemTier = "Common";
 }
-else if (tags.includes("Lane") || tags.includes("Jungle") || itemName.includes("Doran's") || (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
+else if (tags.includes("Lane") || tags.includes("Jungle") || (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
     itemTier = "Starter";
 }
 else if (totalGold >= 900 || tags.includes("Boots") || (totalGold > 500 && details.from && details.from.length > 0)) {
@@ -610,11 +615,11 @@ function submitGuess(guess) {
 
     // 3. Class Pool Cell
     let classClass = 'wrong';
-    if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) {
-        classClass = 'correct';
-    } else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("Component")) {
-        classClass = 'partial';
-    }
+if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) {
+    classClass = 'correct';
+} else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("Component") && !guess.class.includes("Doran's Item")) {
+    classClass = 'partial';
+}
     row.appendChild(createAnimatedCell(`<span>${guess.class.join(', ')}</span>`, classClass, delay));
     delay += step;
 
