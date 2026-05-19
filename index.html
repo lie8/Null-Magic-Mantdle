@@ -225,6 +225,20 @@
             margin-top: 20px;
             display: none;
         }
+           
+        .legal-footer {
+            max-width: 800px;
+            text-align: center;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.5;
+            margin-top: 50px;
+            padding: 15px 0;
+            margin-left: auto;
+            margin-right: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        box-sizing: border-box;
+        }
         .loading { font-size: 18px; color: #c8aa6e; }
     </style>
 </head>
@@ -238,7 +252,7 @@
             </button>
         </div>
         <img class="title-icon" src="https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/1033.png" alt="Null-Magic Mantle Icon">
-        <p class="subtitle" style="text-align: left; margin-top: 0;">Powered by official Riot Data Dragon assets</p>
+        <p class="subtitle" style="text-align: left; margin-top: 0;">Powered by official Riot Data Dragon assets (Patch 14.23.1)</p>
 
         <div class="legend-box">
             <div class="legend-title">Color Indicators</div>
@@ -287,7 +301,9 @@
             <tbody id="resultsBody"></tbody>
         </table>
     </div>
-
+<footer class="legal-footer">
+    Null-Magic Mantdle is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+</footer>
 <script>
 const PATCH_VERSION = "14.23.1"; 
 const API_URL = `https://ddragon.leagueoflegends.com/cdn/${PATCH_VERSION}/data/en_US/item.json`;
