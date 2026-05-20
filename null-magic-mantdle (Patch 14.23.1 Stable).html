@@ -239,6 +239,21 @@
             border-top: 1px solid rgba(255, 255, 255, 0.05);
         box-sizing: border-box;
         }
+        .mode-dropdown {
+            background: #2a2a30;
+            color: #e0e0e0;
+            border: 1px solid #3c3c41;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            outline: none;
+            font-weight: 600;
+        }
+        .mode-dropdown:hover {
+            border-color: #c8aa6e;
+            color: #c8aa6e;
+        }
         .loading { font-size: 18px; color: #c8aa6e; }
     </style>
 </head>
@@ -250,7 +265,7 @@
             <div class="header-toolbar">
                 <select id="modeSelect" class="mode-dropdown" onchange="location = this.value;">
                     <option value="https://lie8.github.io/Null-Magic-Mantdle/"> Standard Mode </option>
-                    <option value="#" selected>📜 Old Alpha Version(Current)</option>
+                    <option value="#" selected>📜 Old Alpha Version (Current)</option>
                 </select>                
                 <button id="toggleDevBtn" style="background: #2a2a30; color: #a0a0a0; border: 1px solid #3c3c41; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                 🛠️ Toggle Dev Panel
