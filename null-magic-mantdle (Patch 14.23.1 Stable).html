@@ -245,11 +245,19 @@
 <body>
 
     <div class="game-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; width: 100%;">
             <h1 style="margin: 0;">Null-Magic Mantdle</h1>
-            <button id="toggleDevBtn" style="background: #2a2a30; color: #a0a0a0; border: 1px solid #3c3c41; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                🛠️ Toggle Dev Panel
-            </button>
+            <div class="header-toolbar">
+                <select id="modeSelect" class="mode-dropdown" onchange="location = this.value;">
+                    <option value="https://lie8.github.io/Null-Magic-Mantdle/" selected> Standard Mode </option>
+                    <option value="#">📜 Old Alpha Version(Current)</option>
+                </select>                
+                <button id="toggleDevBtn" style="background: #2a2a30; color: #a0a0a0; border: 1px solid #3c3c41; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                    🛠️ Toggle Dev Panel
+                </button>
+
+                <button id="openSettingsBtn" class="settings-btn">⚙️</button>
+            </div>
         </div>
         <img class="title-icon" src="https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/1033.png" alt="Null-Magic Mantle Icon">
         <p class="subtitle" style="text-align: left; margin-top: 0;">Powered by official Riot Data Dragon assets (Patch 14.23.1)</p>

@@ -371,18 +371,113 @@
             font-size: 13px;
             line-height: 1.5;
         }
+        /* Toolbar Layout */
+        .header-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Dropdown Stylings */
+        .mode-dropdown {
+            background: #2a2a30;
+            color: #e0e0e0;
+            border: 1px solid #3c3c41;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            outline: none;
+            font-weight: 600;
+        }
+        .mode-dropdown:hover {
+            border-color: #c8aa6e;
+            color: #c8aa6e;
+        }
+
+        /* Settings Gear Button */
+        .settings-btn {
+            background: #2a2a30;
+            color: #a0a0a0;
+            border: 1px solid #3c3c41;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .settings-btn:hover {
+            border-color: #c8aa6e;
+            color: #c8aa6e;
+        }
+
+        /* Toggle Switch Styling inside Settings Modal */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #3c3c41;
+        }
+        .setting-label {
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input { display: none; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #3c3c41;
+            transition: .3s;
+            border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #c8aa6e; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        body.colorblind-mode .correct { background-color: #005fcc !important; } /* Blue */
+        body.colorblind-mode .partial { background-color: #ffcc00 !important; color: #121214 !important; } /* Bright Yellow */
+        body.colorblind-mode .wrong { background-color: #ff6b00 !important; } /* Orange */
     </style>
 </head>
 <body>
 
     <div class="game-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; width: 100%;">
             <h1 style="margin: 0;">Null-Magic Mantdle</h1>
-            <div>
-                <button id="patchNotesBtn" class="patch-btn">📜 Patch Notes</button>
+            <div class="header-toolbar">
+                <select id="modeSelect" class="mode-dropdown" onchange="location = this.value;">
+                    <option value="https://lie8.github.io/Null-Magic-Mantdle/" selected>Standard Mode (Current)</option>
+                    <option value="https://lie8.github.io/Null-Magic-Mantdle/null-magic-mantdle (Patch 14.23.1 Stable).html">📜 Old Alpha Version</option>
+                    <option value="" disabled>--- Future Modes ---</option>
+                    <option value="" disabled>Infinite Mode (Coming Soon)</option>
+                    <option value="" disabled>Arena/ARAM Items Mode (Coming Soon)</option>
+                    <option value="" disabled>Runes (Coming Soon)</option>
+                </select>
+
+                <button id="patchNotesBtn" class="patch-btn" style="margin: 0;">📜 Patch Notes</button>
+                
                 <button id="toggleDevBtn" style="background: #2a2a30; color: #a0a0a0; border: 1px solid #3c3c41; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                     🛠️ Toggle Dev Panel
                 </button>
+
+                <button id="openSettingsBtn" class="settings-btn">⚙️</button>
             </div>
         </div>
         <img class="title-icon" src="https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/1033.png" alt="Null-Magic Mantle Icon">
@@ -471,6 +566,22 @@
                 <button id="closeModalBtn" class="close-modal-btn">&times;</button>
             </div>
             <div id="patchNotesContainer"></div>
+        </div>
+    </div>
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Game Settings</h2>
+                <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
+            </div>
+            
+            <div class="setting-row">
+                <span class="setting-label"><b>Colorblind Mode</b><br><small style="color:#a0a0a0;">Changes indicators to Blue / Yellow / Orange</small></span>
+                <label class="switch">
+                    <input type="checkbox" id="colorblindToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
     </div>
 <footer class="legal-footer">
@@ -948,7 +1059,14 @@ function submitGuess(guess) {
 
     // 8. Item Group 
     let groupClass = 'wrong';
-    if (guess.group === secretItem.group && guess.group !== "None") {
+    
+    const guessGroup = (guess.group || "").trim().toLowerCase();
+    const secretGroup = (secretItem.group || "").trim().toLowerCase();
+    
+    const isGuessNone = (guessGroup === "" || guessGroup === "none");
+    const isSecretNone = (secretGroup === "" || secretGroup === "none");
+
+    if (guessGroup === secretGroup || (isGuessNone && isSecretNone)) {
         groupClass = 'correct';
     }
     row.appendChild(createAnimatedCell(`<span>${guess.group}</span>`, groupClass, delay));
@@ -996,6 +1114,45 @@ toggleDevBtn.addEventListener('click', () => {
     }
 });
 
+// Settings Modal Engine Controls
+const settingsModal = document.getElementById('settingsModal');
+const openSettingsBtn = document.getElementById('openSettingsBtn');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const colorblindToggle = document.getElementById('colorblindToggle');
+
+// Open settings window panel
+openSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'flex';
+});
+
+// Close settings window panel
+closeSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'none';
+});
+
+// Sync checkbox switch state to toggle CSS layout rules dynamically across active elements
+colorblindToggle.addEventListener('change', () => {
+    if (colorblindToggle.checked) {
+        document.body.classList.add('colorblind-mode');
+        localStorage.setItem('colorblindMode', 'true'); // Saves setting for next visit
+    } else {
+        document.body.classList.remove('colorblind-mode');
+        localStorage.setItem('colorblindMode', 'false');
+    }
+});
+
+// Load color settings on page boot
+if (localStorage.getItem('colorblindMode') === 'true') {
+    colorblindToggle.checked = true;
+    document.body.classList.add('colorblind-mode');
+}
+
+// Close setting modal automatically when tracking background area escape clicks
+window.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+        settingsModal.style.display = 'none';
+    }
+});
 resetBtn.addEventListener('click', () => {
     pickWeightedSecretItem();
     resultsBody.innerHTML = '';
@@ -1031,11 +1188,20 @@ const MY_PATCH_NOTES = [
         ]
     },
     {
+        version: "v1.2.0 (Beta)",
+        changes: [
+            "Fixed bug where guessing an item with Item Group 'None' would incorrectly display as red when Item Group is actually 'None'",
+            "Added settings menu with colorblind support",
+            "Added gamemodes/versions dropdown for future content and expansion",
+            "Added alpha version of Null-Magic Mantdle to gamemodes dropdown menu"
+        ]
+    },
+    {
         version: "v1.1.1 (Beta)",
         changes: [
             "Updated Item Group description to be less confusing",
             "Changed class pool when item has no class from 'Component' to 'N/A'",
-            "Added Future Plans in patch notes for a To-Do list"
+            "Added Future Plans in patch notes for a To-Do list" 
         ]
     },
     {
