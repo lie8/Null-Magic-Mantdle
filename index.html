@@ -431,7 +431,7 @@
                     </th>
                     <th style="width: 13%;">
                         <div class="tooltip">Class Pool
-                            <span class="tooltiptext">Recommended user class archetype in Summoner's Rift shop tabs.<br><b>Classes:</b> Mage, Tank, Fighter, Assassin, Support, Marksman.</span>
+                            <span class="tooltiptext">Recommended user class archetype in Summoner's Rift shop tabs for legendary items.<br><b>Classes:</b> Mage, Tank, Fighter, Assassin, Support, Marksman.</span>
                         </div>
                     </th>
                     <th style="width: 11%;">
@@ -474,6 +474,12 @@
         </div>
     </div>
 <footer class="legal-footer">
+    <div style="margin-bottom: 12px;">
+        <a href="https://www.youtube.com/watch?v=-vH2b55TSHI" target="_blank" style="color: #c8aa6e; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px;">
+            📝 Feedback Form (WIP)
+        </a>
+    </div>
+    
     Null-Magic Mantdle is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
 </footer>
 <script>
@@ -611,7 +617,7 @@ function deriveItemClass(itemName, tags) {
             assignedClasses.push(className);
         }
     }
-    return assignedClasses.length > 0 ? assignedClasses : ["Component"];
+    return assignedClasses.length > 0 ? assignedClasses : ["N/A"];
 }
 
 async function initializeGameEngine() {
@@ -692,14 +698,14 @@ async function initializeGameEngine() {
                 descLower.includes("prismatic item") || descLower.includes("anvil")) continue;
 
             if (tags.includes("Consumable") || tags.includes("Vision") || itemName.includes("Potion") || itemName.includes("Elixir") || itemName.includes("Ward") || itemName.includes("Scarecrow")) continue;
-            if (itemName.includes("AHR-") || itemName.includes("Gangplank Placeholder") || itemName.includes("Rune Weaver") || itemName.includes("Bounty") || itemName.includes("Companion") || itemName.includes("Scorchclaw") || itemName.includes("Gustwalker") || itemName.includes("Mosstomper") || itemName.includes("Guardian's ")) continue;
+            if (itemName.includes("AHR-") || itemName.includes("Gangplank Placeholder") || itemName.includes("Rune Weaver") || itemName.includes("Bounty") || itemName.includes("Scorchclaw") || itemName.includes("Gustwalker") || itemName.includes("Mosstomper") || itemName.includes("Guardian's ")) continue;
 
             const itemClasses = deriveItemClass(itemName, tags);
             let itemTier = "Common"; 
 
             if (itemName.includes("Doran's")) {
                 itemTier = "Starter";
-            } else if (!itemClasses.includes("Boots") && !itemClasses.includes("Component")) {
+            } else if (!itemClasses.includes("Boots") && !itemClasses.includes("N/A")) {
                 itemTier = "Legendary";
             } else if (totalGold >= 2000) {
                 itemTier = "Legendary";
@@ -886,7 +892,7 @@ function submitGuess(guess) {
     let classClass = 'wrong';
     if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) {
         classClass = 'correct';
-    } else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("Component") && !guess.class.includes("Doran's Item")) {
+    } else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("N/A") && !guess.class.includes("Doran's Item")) {
         classClass = 'partial';
     }
     row.appendChild(createAnimatedCell(`<span>${guess.class.join(', ')}</span>`, classClass, delay));
@@ -1002,8 +1008,38 @@ resetBtn.addEventListener('click', () => {
 // ==========================================
 //  EDIT PATCH NOTES HERE!
 // ==========================================
+// Major.Minor.Patch
+// Major -> Massive change like new thing completely or new game mode or something 
+// Minor -> Noticeable improvement like new stat filter or rearranged table columns or something 
+// Patch -> Small bug fixes or tiny corrections that do not adda ny new content and stuff
 const MY_PATCH_NOTES = [
     {
+        version: "Future Plans/Ideas",
+        changes: [
+            "Publicly hosted domain",
+            "Daily changing item and timer",
+            "Win Streaks and user data",
+            "Player Counts",
+            "Colorblind mode",
+            "Better Background and Graphics",
+            "Feedback Form",
+            "Mobile Support",
+            "Gamemode with arena/ayhem items",
+            "Gamemode for Augments",
+            "Optimize ts dogwater ahh code" 
+
+        ]
+    },
+    {
+        version: "v1.1.1 (Beta)",
+        changes: [
+            "Updated Item Group description to be less confusing",
+            "Changed class pool when item has no class from 'Component' to 'N/A'",
+            "Added Future Plans in patch notes for a To-Do list"
+        ]
+    },
+    {
+        
         version: "v1.1.0 (Beta)",
         changes: [
             "Moved the 'Item Group' column to the far-right side of the results row.",
