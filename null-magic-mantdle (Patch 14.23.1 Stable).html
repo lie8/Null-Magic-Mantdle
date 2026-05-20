@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Null-Magic Mantdle</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121214;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 { color: #f0e6d2; margin-bottom: 5px; font-size: 32px; font-weight: 700; letter-spacing: 0.5px; }
+        .subtitle { color: #a0a0a0; margin-bottom: 15px; }
+        
+        .title-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            border: 2px solid #c8aa6e;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            margin-bottom: 15px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .legend-box {
+            background-color: #1c1c22;
+            border: 1px solid #3c3c41;
+            border-radius: 6px;
+            padding: 12px;
+            max-width: 450px;
+            margin: 0 auto 25px auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .legend-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #c8aa6e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .legend-items {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .dev-panel {
+            background-color: #1c1c22;
+            border: 1px dashed #c8aa6e;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: none; 
+            justify-content: space-around;
+            align-items: center;
+        }
+        .dev-btn {
+            background-color: #c8aa6e;
+            color: #121214;
+            border: none;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .dev-btn:hover { background-color: #e0ca9e; }
+
+        .input-area {
+            position: relative;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+        input {
+            width: 350px;
+            padding: 12px;
+            background-color: #1e1e22;
+            border: 2px solid #3c3c41;
+            color: white;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input:focus { outline: none; border-color: #c8aa6e; }
+        input:disabled { background-color: #333; cursor: not-allowed;}
+        
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 350px;
+            background: #1e1e22;
+            border: 1px solid #3c3c41;
+            border-top: none;
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            border-radius: 0 0 4px 4px;
+        }
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .suggestion-item img { width: 24px; height: 24px; border-radius: 4px; }
+        .suggestion-item:hover { background-color: #2a2a30; color: #c8aa6e; }
+
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+            margin-top: 20px;
+            perspective: 1000px;
+        }
+        th { color: #a0a0a0; font-weight: 600; padding-bottom: 5px; font-size: 14px;}
+        
+        td {
+            padding: 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 4px;
+            vertical-align: middle;
+            height: 80px;
+            background-color: transparent;
+        }
+        
+        .flip-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        
+        .flip-animate {
+            animation: wordleTopDownFlip 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+            padding: 6px;
+        }
+
+        .card-front {
+            background-color: #1e1e22;
+            border: 1px solid #3c3c41;
+            color: #ffffff;
+        }
+
+        .card-back {
+            transform: rotateX(180deg);
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+            line-height: 1.3;
+        }
+
+        .item-cell { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 6px; 
+            width: 100%;
+        }
+        .item-cell img { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 0px !important;
+            border: 1px solid #555; 
+            flex-shrink: 0;
+        }
+        .item-cell span {
+            font-size: 12px;
+            word-break: break-word;
+        }
+
+        .correct { background-color: #1c773e !important; } 
+        .partial { background-color: #b58900 !important; } 
+        .wrong { background-color: #aa3838 !important; }   
+
+        @keyframes wordleTopDownFlip {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(90deg); } 
+            100% { transform: rotateX(180deg); }
+        }
+
+        .win-message {
+            color: #4bb543;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+        }
+           
+        .legal-footer {
+            max-width: 800px;
+            text-align: center;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            line-height: 1.5;
+            margin-top: 50px;
+            padding: 15px 0;
+            margin-left: auto;
+            margin-right: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        box-sizing: border-box;
+        }
+        .loading { font-size: 18px; color: #c8aa6e; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <h1 style="margin: 0;">Null-Magic Mantdle</h1>
+            <button id="toggleDevBtn" style="background: #2a2a30; color: #a0a0a0; border: 1px solid #3c3c41; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                🛠️ Toggle Dev Panel
+            </button>
+        </div>
+        <img class="title-icon" src="https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/1033.png" alt="Null-Magic Mantle Icon">
+        <p class="subtitle" style="text-align: left; margin-top: 0;">Powered by official Riot Data Dragon assets (Patch 14.23.1)</p>
+
+        <div class="legend-box">
+            <div class="legend-title">Color Indicators</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color correct"></div>
+                    <span>Correct</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color partial"></div>
+                    <span>Partial Overlap</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color wrong"></div>
+                    <span>Incorrect</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dev-panel" id="devPanel">
+            <div><strong>Dev Console:</strong> Target Answer: <span id="devTarget" style="color:#c8aa6e;">Loading...</span></div>
+            <button class="dev-btn" id="resetBtn">🔄 Reroll Item</button>
+        </div>
+
+        <div id="loadingText" class="loading">Fetching current items database from Riot servers...</div>
+
+        <div class="input-area" id="gameplayArea" style="display:none;">
+            <input type="text" id="itemInput" placeholder="Type any item (e.g., Trinity Force, Long Sword...)" autocomplete="off">
+            <div id="suggestions" class="suggestions"></div>
+        </div>
+
+        <div id="winMessage" class="win-message"></div>
+
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th style="width: 16%;">Item Info</th>
+                    <th style="width: 13%;">Rarity</th>
+                    <th style="width: 15%;">Class Pool</th>
+                    <th style="width: 13%;">Gold Value</th>
+                    <th style="width: 16%;">Primary Stats</th>
+                    <th style="width: 11%;">Active?</th>
+                    <th style="width: 16%;">Common Components</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+        </table>
+    </div>
+<footer class="legal-footer">
+    Null-Magic Mantdle is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+</footer>
+<script>
+const PATCH_VERSION = "14.23.1"; 
+const API_URL = `https://ddragon.leagueoflegends.com/cdn/${PATCH_VERSION}/data/en_US/item.json`;
+const IMG_BASE = `https://ddragon.leagueoflegends.com/cdn/${PATCH_VERSION}/img/item/`;
+
+let totalGuessesCount = 0;
+
+const ITEM_CLASS_MAPS = {
+    Mage: [
+        "Archangel's Staff", "Banshee's Veil", "Bloodletter's Curse", "Blackfire Torch", "Cosmic Drive", "Cryptbloom", 
+        "Hextech Gunblade", "Hextech Rocketbelt", "Horizon Focus", "Liandry's Torment", "Lich Bane", 
+        "Luden's Companion", "Malignance", "Morellonomicon", "Nashor's Tooth", "Perplexity", 
+        "Rabadon's Deathcap", "Riftmaker", "Rite of Ruin", "Rod of Ages", "Rylai's Crystal Scepter", 
+        "Shadowflame", "Stormsurge", "Sword of Blossoming Dawn", "Void Staff", "Wordless Promise", "Zhonya's Hourglass",
+        "Mejai's Soulstealer"
+    ],
+    Support: [
+        "Abyssal Mask", "Ardent Censer", "Chemtech Putrifier", "Dawncore", "Echoes of Helia", 
+        "Frozen Heart", "Imperial Mandate", "Knight's Vow", "Locket of the Iron Solari", "Mikael's Blessing", 
+        "Moonstone Renewer", "Redemption", "Rite of Ruin", "Shurelya's Battlesong", 
+        "Staff of Flowing Water", "Sword of Blossoming Dawn", "Thornmail", "Wordless Promise", "Zeke's Convergence"
+    ],
+    Tank: [
+        "Abyssal Mask", "Anathema's Chains", "Bloodletter's Curse", "Dead Man's Plate", "Force of Nature", 
+        "Frozen Heart", "Heartsteel", "Hollow Radiance", "Iceborn Gauntlet", "Jak'Sho, The Protean", 
+        "Kaenic Rookern", "Knight's Vow", "Locket of the Iron Solari", "Overlord's Bloodmail", "Randuin's Omen", "Spirit Visage", 
+        "Sterak's Gage", "Sunfire Aegis", "Thornmail", "Titanic Hydra", "Trailblazer", "Unending Despair", 
+        "Warmog's Armor", "Winter's Approach", "Zeke's Convergence"
+    ],
+    Marksman: [
+        "Atma's Reckoning", "Blade of the Ruined King", "Bloodthirster", "Essence Reaver", "Guardian Angel", 
+        "Guinsoo's Rageblade", "Immortal Shieldbow", "Infinity Edge", "Kraken Slayer", "Lord Dominik's Regards", 
+        "Manamune", "Maw of Malmortius", "Mercurial Scimitar", "Mortal Reminder", "Nashor's Tooth", 
+        "Navori Flickerblade", "Phantom Dancer", "Rapid Firecannon", "Runaan's Hurricane", "Statikk Shiv", 
+        "Terminus", "The Collector", "Wit's End", "Yun Tal Wildarrows", "Zephyr"
+    ],
+    Assassin: [
+        "Axiom Arc", "Chempunk Chainsword", "Edge of Night", "Guardian Angel", "Hellfire Hatchet", 
+        "Hextech Gunblade", "Hubris", "Manamune", "Maw of Malmortius", "Opportunity", "Profane Hydra", 
+        "Serpent's Fang", "Serylda's Grudge", "Spectral Cutlass", "The Collector", "Voltaic Cyclosword", "Youmuu's Ghostblade"
+    ],
+    Fighter: [
+        "Atma's Reckoning", "Black Cleaver", "Blade of the Ruined King", "Chempunk Chainsword", "Death's Dance", 
+        "Dead Man's Plate", "Eclipse", "Experimental Hexplate", "Guardian Angel", "Hullbreaker", 
+        "Iceborn Gauntlet", "Manamune", "Maw of Malmortius", "Overlord's Bloodmail", "Ravenous Hydra", "Spear of Shojin", 
+        "Sterak's Gage", "Stridebreaker", "Sundered Sky", "Terminus", "Titanic Hydra", "Trinity Force", "Wit's End", "Zephyr"
+    ]
+};
+
+// Pure mapping reading entirely from the strict item.stats object values to prevent description cross-contamination
+function processItemStats(details) {
+    const statsList = [];
+    const s = details.stats || {};
+    const text = details.description ? details.description.toLowerCase() : "";
+
+    // 1. Strict, verified mapping from your sandbox output keys
+    if (s.FlatPhysicalDamageMod > 0) statsList.push("AD");
+    if (s.FlatMagicDamageMod > 0) statsList.push("AP");
+    if (s.FlatArmorMod > 0) statsList.push("Armor");
+    if (s.FlatSpellBlockMod > 0) statsList.push("MR");
+    if (s.PercentAttackSpeedMod > 0) statsList.push("Attack Speed");
+    if (s.FlatCritChanceMod > 0) statsList.push("Crit");
+    if (s.FlatMPPoolMod > 0 || s.FlatMPMod > 0) statsList.push("Mana");
+    if (s.FlatMovementSpeedMod > 0 || s.PercentMovementSpeedMod > 0) statsList.push("Move Speed");
+    
+    // Fixed structural check using the exact sandbox key found
+    if (s.FlatHPPoolMod > 0) {
+        statsList.push("Health");
+    }
+
+    // 2. Safe, localized text parsing confined STRICTLY to the header <stats> block
+    // This stops the code from wandering into the <passive> text blocks completely!
+    const statsBlockMatch = text.match(/<stats>([\s\S]*?)<\/stats>/);
+    if (statsBlockMatch) {
+        const statsSectionText = statsBlockMatch[1];
+
+        // Safely extract stats that Riot leaves out of the structured object block
+        if (statsSectionText.includes("ability haste")) statsList.push("Haste");
+        if (statsSectionText.includes("armor penetration") || statsSectionText.includes("armor pen")) statsList.push("Armor Pen");
+        if (statsSectionText.includes("magic penetration") || statsSectionText.includes("magic pen")) statsList.push("Magic Pen");
+        if (statsSectionText.includes("lethality")) statsList.push("Lethality");
+        if (statsSectionText.includes("life steal") || statsSectionText.includes("lifesteal")) statsList.push("Lifesteal");
+        if (statsSectionText.includes("omnivamp")) statsList.push("Omnivamp");
+        if (statsSectionText.includes("base health regen") || statsSectionText.includes("health regeneration")) statsList.push("Health Regen");
+        if (statsSectionText.includes("base mana regen") || statsSectionText.includes("mana regeneration")) statsList.push("Mana Regen");
+        if (statsSectionText.includes("heal and shield power")) statsList.push("Heal/Shield Power");
+    }
+
+    const uniqueStats = [...new Set(statsList)];
+    return uniqueStats.length > 0 ? uniqueStats : ["None"];
+}
+
+function deriveItemClass(itemName, tags) {
+    // 1. Instantly classify any item containing "Doran's" into its own custom pool
+    if (itemName.includes("Doran's")) {
+        return ["Doran's Item"];
+    }
+
+    if (tags.includes("Boots") || itemName.includes("Boots") || itemName === "Plated Steelcaps" || itemName === "Mercury's Treads") {
+        return ["Boots"];
+    }
+    
+    const assignedClasses = [];
+    const lowerItemName = itemName.toLowerCase();
+
+    for (const [className, itemNamesList] of Object.entries(ITEM_CLASS_MAPS)) {
+        const lowerClassList = itemNamesList.map(name => name.toLowerCase());
+        if (lowerClassList.includes(lowerItemName)) {
+            assignedClasses.push(className);
+        }
+    }
+    return assignedClasses.length > 0 ? assignedClasses : ["Component"];
+}
+
+async function initializeGameEngine() {
+    try {
+        const response = await fetch(API_URL);
+        const rawPayload = await response.json();
+        const data = rawPayload.data;
+
+        completeItemPool = [];
+        indexedItemMap = data;
+
+        for (const [id, details] of Object.entries(data)) {
+            const itemName = details.name;
+            const tags = details.tags || [];
+            const totalGold = details.gold.total;
+            const descLower = details.description ? details.description.toLowerCase() : "";
+
+            if (details.gold.purchasable === false || (details.maps && details.maps["11"] === false)) continue;
+            if (details.requiredChampion || itemName.includes("AHR-") || itemName.includes("Gangplank Placeholder")) continue;
+            
+            if (tags.includes("Consumable") || tags.includes("Vision") || itemName.includes("Potion") || itemName.includes("Elixir") || itemName.includes("Ward") || itemName.includes("Scarecrow")) continue;
+            if (itemName === "World Atlas" || itemName.includes("Rune Weaver") || itemName.includes("Bounty") || itemName.includes("Companion") || itemName.includes("Scorchclaw") || itemName.includes("Gustwalker") || itemName.includes("Mosstomper")) continue;
+
+            // Determine structural item classification first
+const itemClasses = deriveItemClass(itemName, tags);
+let itemTier = "Common"; 
+
+// 1. Force all Doran's items to explicitly be Starter tier
+if (itemName.includes("Doran's")) {
+    itemTier = "Starter";
+}
+else if (!itemClasses.includes("Boots") && !itemClasses.includes("Component")) {
+    itemTier = "Legendary";
+}
+else if (totalGold >= 2000) {
+    itemTier = "Legendary";
+}
+else if (["Slightly Magical Boots", "Boots", "B.F. Sword", "B. F. Sword", "Needlessly Large Rod", "Long Sword", "Dagger", "Ruby Crystal", "Amplifying Tome", "Faerie Charm", "Sapphire Crystal", "Cloth Armor", "Null-Magic Mantle"].includes(itemName)) {
+    itemTier = "Common";
+}
+else if (tags.includes("Lane") || tags.includes("Jungle") || (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
+    itemTier = "Starter";
+}
+else if (totalGold >= 900 || tags.includes("Boots") || (totalGold > 500 && details.from && details.from.length > 0)) {
+    itemTier = "Epic";
+}
+else {
+    itemTier = "Common";
+}
+
+            const cleanRecipe = [];
+            if (details.from) {
+                const uniqueSet = new Set();
+                details.from.forEach(childId => {
+                    if (data[childId]) uniqueSet.add(data[childId].name);
+                });
+                uniqueSet.forEach(name => cleanRecipe.push(name));
+            }
+
+            const hasActiveEffect = /\bactive\b/.test(descLower);
+
+            completeItemPool.push({
+                id: id,
+                name: itemName,
+                tier: itemTier,
+                class: deriveItemClass(itemName, tags),
+                cost: totalGold,
+                stats: processItemStats(details), 
+                hasActive: hasActiveEffect,
+                recipe: cleanRecipe,
+                imgUrl: IMG_BASE + details.image.full
+            });
+        }
+
+        completeItemPool.sort((a, b) => a.name.localeCompare(b.name));
+
+        document.getElementById("loadingText").style.display = "none";
+        document.getElementById("gameplayArea").style.display = "flex";
+
+        pickWeightedSecretItem();
+
+    } catch (error) {
+        console.error("Initialization fault detected:", error);
+        document.getElementById("loadingText").textContent = "API error occurs. Check configuration variables.";
+    }
+}
+
+function pickWeightedSecretItem() {
+    const roll = Math.floor(Math.random() * 100) + 1; 
+    let targetPool = [];
+
+    if (roll <= 75) {
+        targetPool = completeItemPool.filter(i => i.tier === "Legendary");
+    } else if (roll <= 95) {
+        targetPool = completeItemPool.filter(i => i.tier === "Epic");
+    } else {
+        targetPool = completeItemPool.filter(i => i.tier === "Common" || i.tier === "Starter");
+    }
+
+    if (targetPool.length === 0) targetPool = completeItemPool;
+    secretItem = targetPool[Math.floor(Math.random() * targetPool.length)];
+    
+    document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier})`;
+}
+
+const input = document.getElementById('itemInput');
+const suggestionsBox = document.getElementById('suggestions');
+const resultsBody = document.getElementById('resultsBody');
+const winMessage = document.getElementById('winMessage');
+
+input.addEventListener('input', () => {
+    const value = input.value.toLowerCase();
+    suggestionsBox.innerHTML = '';
+    if (!value) return;
+
+    const filtered = completeItemPool.filter(item => item.name.toLowerCase().includes(value));
+    
+    filtered.slice(0, 8).forEach(item => { 
+        const div = document.createElement('div');
+        div.classList.add('suggestion-item');
+        
+        const img = document.createElement('img');
+        img.src = item.imgUrl;
+        
+        const span = document.createElement('span');
+        span.textContent = item.name;
+        
+        div.appendChild(img);
+        div.appendChild(span);
+        
+        div.addEventListener('click', () => {
+            submitGuess(item);
+            input.value = '';
+            suggestionsBox.innerHTML = '';
+        });
+        suggestionsBox.appendChild(div);
+    });
+});
+
+document.addEventListener('click', (e) => {
+    if (e.target !== input) suggestionsBox.innerHTML = '';
+});
+
+function createAnimatedCell(htmlContent, feedbackClass, staggerSeconds) {
+    const td = document.createElement('td');
+    
+    const container = document.createElement('div');
+    container.classList.add('flip-container');
+    
+    const front = document.createElement('div');
+    front.classList.add('card-front');
+    front.innerHTML = `<span>?</span>`;
+    
+    const back = document.createElement('div');
+    back.classList.add('card-back', feedbackClass);
+    if (typeof htmlContent === 'string') {
+        back.innerHTML = htmlContent;
+    } else {
+        back.appendChild(htmlContent);
+    }
+    
+    container.appendChild(front);
+    container.appendChild(back);
+    td.appendChild(container);
+    
+    setTimeout(() => {
+        container.classList.add('flip-animate');
+    }, staggerSeconds * 1000);
+
+    return td;
+}
+
+function submitGuess(guess) {
+    totalGuessesCount++;
+    const row = document.createElement('tr');
+    let delay = 0;
+    const step = 0.35; 
+
+    // 1. Item Info Cell
+    const itemWrapper = document.createElement('div');
+    itemWrapper.classList.add('item-cell');
+    const icon = document.createElement('img');
+    icon.src = guess.imgUrl;
+    const label = document.createElement('span');
+    label.textContent = guess.name;
+    itemWrapper.appendChild(icon);
+    itemWrapper.appendChild(label);
+    
+    const nameClass = (guess.name === secretItem.name) ? 'correct' : 'wrong';
+    row.appendChild(createAnimatedCell(itemWrapper, nameClass, delay));
+    delay += step;
+
+    // 2. Rarity Cell
+    const rarityClass = (guess.tier === secretItem.tier) ? 'correct' : 'wrong';
+    row.appendChild(createAnimatedCell(`<span>${guess.tier}</span>`, rarityClass, delay));
+    delay += step;
+
+    // 3. Class Pool Cell
+    let classClass = 'wrong';
+if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) {
+    classClass = 'correct';
+} else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("Component") && !guess.class.includes("Doran's Item")) {
+    classClass = 'partial';
+}
+    row.appendChild(createAnimatedCell(`<span>${guess.class.join(', ')}</span>`, classClass, delay));
+    delay += step;
+
+    // 4. Gold Value Cell
+    let goldContent = `<span>${guess.cost}</span>`;
+    const goldClass = (guess.cost === secretItem.cost) ? 'correct' : 'wrong';
+    if (guess.cost !== secretItem.cost) {
+        const arrow = guess.cost < secretItem.cost ? ' ⬆️' : ' ⬇️';
+        goldContent = `<span>${guess.cost}${arrow}</span>`;
+    }
+    row.appendChild(createAnimatedCell(goldContent, goldClass, delay));
+    delay += step;
+
+    // 5. Primary Stats Cell
+    let statsClass = 'wrong';
+    if (JSON.stringify(guess.stats.sort()) === JSON.stringify(secretItem.stats.sort())) {
+        statsClass = 'correct';
+    } else if (guess.stats.some(s => secretItem.stats.includes(s)) && !guess.stats.includes("None")) {
+        statsClass = 'partial';
+    }
+    row.appendChild(createAnimatedCell(`<span>${guess.stats.join(', ')}</span>`, statsClass, delay));
+    delay += step;
+
+    // 6. Active Properties Cell
+    const activeClass = (guess.hasActive === secretItem.hasActive) ? 'correct' : 'wrong';
+    const activeText = guess.hasActive ? "Yes" : "No";
+    row.appendChild(createAnimatedCell(`<span>${activeText}</span>`, activeClass, delay));
+    delay += step;
+
+    // 7. Component List Fallback logic
+    let recipeText = "";
+    let recipeClass = 'wrong';
+    
+    if (guess.name === secretItem.name) {
+        recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
+        recipeClass = 'correct';
+    } else if (secretItem.recipe.includes(guess.name)) {
+        recipeText = guess.name;
+        recipeClass = 'partial';
+    } else {
+        const sharedComponents = guess.recipe.filter(r => secretItem.recipe.includes(r));
+        if (sharedComponents.length > 0) {
+            recipeText = sharedComponents.join(', ');
+            recipeClass = 'partial';
+        } else {
+            // Updated Fallback: Always display the guessed item's recipe pieces instead of saying "no overlap"
+            recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
+            recipeClass = 'wrong';
+        }
+    }
+    row.appendChild(createAnimatedCell(`<span>${recipeText}</span>`, recipeClass, delay));
+
+    resultsBody.insertBefore(row, resultsBody.firstChild);
+
+    if (guess.name === secretItem.name) {
+        setTimeout(() => {
+            const trackingWord = totalGuessesCount === 1 ? "guess" : "guesses";
+            let reactionMessage = "";
+
+            // Dynamic victory reaction tiers based on performance
+            if (totalGuessesCount >= 1 && totalGuessesCount <= 3) {
+                reactionMessage = `🔥 You're a Legend! You found ${secretItem.name} in just ${totalGuessesCount} ${trackingWord}!`;
+            } else if (totalGuessesCount >= 4 && totalGuessesCount <= 8) {
+                reactionMessage = `✨ Great job! You got ${secretItem.name} in ${totalGuessesCount} ${trackingWord}!`;
+            } else {
+                reactionMessage = `🎉 Well Done! You found ${secretItem.name} in ${totalGuessesCount} ${trackingWord}!`;
+            }
+
+            winMessage.textContent = reactionMessage;
+            winMessage.style.display = 'block';
+            input.disabled = true;
+        }, (delay + 0.6) * 1000);
+    }
+}
+
+const toggleDevBtn = document.getElementById('toggleDevBtn');
+const devPanel = document.getElementById('devPanel');
+const resetBtn = document.getElementById('resetBtn');
+
+toggleDevBtn.addEventListener('click', () => {
+    if (devPanel.style.display === 'flex') {
+        devPanel.style.display = 'none';
+        toggleDevBtn.style.borderColor = '#3c3c41';
+        toggleDevBtn.style.color = '#a0a0a0';
+    } else {
+        const challenge = prompt("Enter Password to unlock developer diagnostics panel:");
+        if (challenge === "teemo123") {
+            devPanel.style.display = 'flex';
+            toggleDevBtn.style.borderColor = '#c8aa6e';
+            toggleDevBtn.style.color = '#c8aa6e';
+        } else if (challenge !== null) {
+            alert("Access Denied.");
+        }
+    }
+});
+
+resetBtn.addEventListener('click', () => {
+    pickWeightedSecretItem();
+    resultsBody.innerHTML = '';
+    winMessage.style.display = 'none';
+    totalGuessesCount = 0;
+    input.disabled = false;
+    input.value = '';
+    suggestionsBox.innerHTML = '';
+});
+
+initializeGameEngine();
+</script>
+</body>
+</html>
