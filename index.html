@@ -774,7 +774,8 @@ async function initializeGameEngine() {
             }
             const tier3BootNames = [
                 "Zephyr", "Gunmetal Greaves", "Dreadnought Striders", "Relentless Pursuit",
-                "Armored Advance", "Noxian Fervor", "Noxian Gait", "Noxian Might"
+                "Armored Advance", "Noxian Fervor", "Noxian Gait", "Noxian Might", "Immortal Path",
+                "Spellslinger's Shoes", "Swiftmarch", "Crimson Lucidity"," Chainlaced Crushers"
             ];
             if (tier3BootNames.some(bootName => itemName.includes(bootName))) {
                 isTier3Boot = true;
@@ -783,8 +784,8 @@ async function initializeGameEngine() {
 
             const arenaExclusiveNames = [
                 "Prismatic", "Anima Visage", "Perplexity", "Rite of Ruin", "Sword of Blossoming Dawn",
-                "Wordless Promise", "Bloodletter's Curse", "Atma's Reckoning", "Trailblazer", 
-                "Hollow Radiance", "Symbiotic Soles", "Virtue of the Triforce", "Cyclonic Slicers",
+                "Wordless Promise", "Atma's Reckoning", "Trailblazer", 
+                 "Symbiotic Soles", "Virtue of the Triforce", "Cyclonic Slicers",
                 "Fish Tank", "Radiant Virtue"
             ];
             if (arenaExclusiveNames.some(name => itemName.includes(name))) continue;
@@ -891,21 +892,65 @@ const suggestionsBox = document.getElementById('suggestions');
 const resultsBody = document.getElementById('resultsBody');
 const winMessage = document.getElementById('winMessage');
 
+// Tiny helper function to dynamically create item acronyms (ignoring punctuation/spaces)
+function getItemAcronym(name) {
+    return name.toLowerCase()
+        .split(/[\s'-]+/) // Splits by spaces, hyphens, or apostrophes
+        .filter(word => word.length > 0)
+        .map(word => word.charAt(0))
+        .join('');
+}
+
 input.addEventListener('input', () => {
     const value = input.value.toLowerCase().trim();
     suggestionsBox.innerHTML = '';
     if (!value) return;
 
+    // Clean up the user input to ignore punctuation/spaces for the shortcut checks
+    const cleanValue = value.replace(/[\s'-]/g, '');
+
+    // HARDCODED BACKUP BOX (For slang/nicknames that don't match the first letters perfectly)
+    const shortcuts = {
+        "bork": "bladeoftheruinedking",
+        "botrk": "bladeoftheruinedking",
+        "dcap": "rabadonsdeathcap",
+        "qss": "quicksilversash",
+        "ldr": "lorddominiksregards",
+        "bv": "bansheesveil",
+        "bc": "bloodletterscurse",
+        "bg": "berserkersgreaves",
+        "sg": "seryldasgrudge",
+        "bc": "bamiscinder",
+        "sg": "steraksgage",
+        "wa": "wintersapproach",
+        "dmp": "deadmansplate",
+    };
+
     const scoredItems = completeItemPool.map(item => {
         const lowerName = item.name.toLowerCase();
+        const cleanName = lowerName.replace(/[\s'-]/g, '');
+        
         let score = 0;
 
         if (lowerName.startsWith(value)) {
-            score = 1; 
+            score = 1; // Highest Priority: Name starts with search
         } else if (lowerName.includes(` ${value}`) || lowerName.includes(`'${value}`) || lowerName.includes(`-${value}`)) {
-            score = 2; 
+            score = 2; // Mid Priority: Word inside name starts with search
         } else if (lowerName.includes(value)) {
-            score = 3; 
+            score = 3; // Low Priority: Letters are found anywhere inside the name
+        } else {
+            // Low Priority Fallbacks: Requires at least 2 letters typed to prevent flooding
+            if (value.length >= 2) {
+                // Check A: Automatic Acronym generator engine
+                const autoAcronym = getItemAcronym(item.name);
+                
+                // Check B: Hardcoded manual slang box mapping
+                const matchesSlang = shortcuts[cleanValue] && cleanName === shortcuts[cleanValue];
+
+                if (autoAcronym.startsWith(value) || matchesSlang) {
+                    score = 4; // Lowest Priority: Put acronym/slang results at the bottom
+                }
+            }
         }
         return { item, score };
     });
@@ -914,7 +959,7 @@ input.addEventListener('input', () => {
         .filter(match => match.score > 0)
         .sort((a, b) => {
             if (a.score !== b.score) {
-                return a.score - b.score; 
+                return a.score - b.score; // Sorts 1 -> 2 -> 3 -> 4
             }
             return a.item.name.localeCompare(b.item.name); 
         })
@@ -1177,14 +1222,23 @@ const MY_PATCH_NOTES = [
             "Daily changing item and timer",
             "Win Streaks and user data",
             "Player Counts",
-            "Colorblind mode",
             "Better Background and Graphics",
             "Feedback Form",
             "Mobile Support",
-            "Gamemode with arena/ayhem items",
-            "Gamemode for Augments",
+            "Gamemode with arena/ayhem items?",
+            "Gamemode for Augments?",
+            "Gamemode for runes?",
             "Optimize ts dogwater ahh code" 
 
+        ]
+    },
+    {
+        version: "v1.2.1 (Beta)",
+        changes: [
+            "Fixed filter incorrectly removing Bloodletter's Curse and Hollow Radiance from pool",
+            "Updated search suggestions to include common acronyms like LDR or BORK to be able to search with",
+            "Fixed gamemode selector not working correctly",
+            "Added gamemode selector to alpha version to easily change back to original mode"
         ]
     },
     {
