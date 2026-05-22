@@ -32,42 +32,6 @@
             text-align: center;
         }
 
-        .legend-box {
-            background-color: #1c1c22;
-            border: 1px solid #3c3c41;
-            border-radius: 6px;
-            padding: 12px;
-            max-width: 450px;
-            margin: 0 auto 25px auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            display: block; /* Kept static, dynamically hidden using JavaScript or conditional CSS classes */
-        }
-        .legend-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: #c8aa6e;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-        .legend-items {
-            display: flex;
-            justify-content: space-around;
-            gap: 10px;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
-        }
-
         .dev-panel {
             background-color: #1c1c22;
             border: 1px dashed #c8aa6e;
@@ -442,7 +406,11 @@
             transition: .3s;
             border-radius: 50%;
         }
-        .daily-stats-banner {
+        
+        input:checked + .slider { background-color: #c8aa6e; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .infinite-stats-banner {
             display: flex;
             justify-content: space-around;
             background: #1a1a1f;
@@ -451,27 +419,116 @@
             border-radius: 6px;
             margin-bottom: 15px;
             width: 100%;
-            font-size: 13px;
+            font-size: 12px;
         }
-        .stat-box {
-            text-align: center;
+        .infinite-controls-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            width: 100%;
         }
-        .stat-val {
-            display: block;
-            font-size: 18px;
-            color: #c8aa6e;
-            font-weight: bold;
-            margin-top: 2px;
-        }
-        .timer-val {
+        .game-btn {
+            flex: 1;
+            background: #1e1e24;
+            border: 1px solid #3c3c41;
             color: #a0a0a0;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
         }
-        input:checked + .slider { background-color: #c8aa6e; }
-        input:checked + .slider:before { transform: translateX(22px); }
-
+        .game-btn:hover {
+            border-color: #c8aa6e;
+            color: #fff;
+        }
+        .reveal-btn:hover {
+            border-color: #ff4655;
+            color: #ff4655;
+        }
+        .next-btn {
+            background: #c8aa6e;
+            color: #1a1a1f;
+            border-color: #c8aa6e;
+        }
+        .next-btn:hover {
+            background: #e2c282;
+            color: #1a1a1f;
+        }
+        
         body.colorblind-mode .correct { background-color: #005fcc !important; } 
         body.colorblind-mode .partial { background-color: #ffcc00 !important; color: #121214 !important; } 
         body.colorblind-mode .wrong { background-color: #ff6b00 !important; } 
+
+        .streak-disclaimer {
+            color: #a0a0a0;
+            font-size: 11px;
+            font-style: italic;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* FLOATING DRAGGABLE COMPONENT GRAPHICS SHEET RULES */
+        .draggable-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            background: #1a1a1f;
+            border: 2px solid #3c3c41;
+            border-radius: 6px;
+            width: 260px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .legend-header {
+            background: #24242a;
+            border-bottom: 1px solid #3c3c41;
+            padding: 8px 12px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #c8aa6e;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            user-select: none;
+        }
+        .legend-close-x {
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            font-size: 16px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+        }
+        .legend-close-x:hover {
+            color: #ff4655;
+        }
+        .legend-body {
+            padding: 12px;
+            text-align: left;
+        }
+        .legend-row-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+        .legend-row-item:last-child {
+            margin-bottom: 0;
+        }
+        .legend-indicator-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -481,12 +538,9 @@
             <h1 style="margin: 0;">Null-Magic Mantdle</h1>
             <div class="header-toolbar">
                 <select id="modeSelect" class="mode-dropdown" onchange="location = this.value;">
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/" selected> ☀️ Daily Mode (Current) </option>
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/infinite-mode.html"> ♾️ Infinite Mode</option>
+                    <option value="https://lie8.github.io/Null-Magic-Mantdle/"> ☀️ Daily Mode </option>
+                    <option value="https://lie8.github.io/Null-Magic-Mantdle/infinite-mode.html" selected> ♾️ Infinite Mode</option>
                     <option value="https://lie8.github.io/Null-Magic-Mantdle/null-magic-mantdle (Patch 14.23.1 Stable).html">📜 Old Alpha Version</option>
-                    <option value="" disabled>--- Possible Future Modes ---</option>
-                    <option value="" disabled>Arena/ARAM Items Mode </option>
-                    <option value="" disabled>Runes </option> 
                 </select>
 
                 <button id="patchNotesBtn" class="patch-btn" style="margin: 0;">📜 Patch Notes</button>
@@ -501,36 +555,23 @@
         <img class="title-icon" src="https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/1033.png" alt="Null-Magic Mantle Icon">
         <p class="subtitle" style="text-align: left; margin-top: 0;">Powered by official Riot Data Dragon assets (League Patch 16.10.1)</p>
 
-        <div class="legend-box" id="legendBox">
-            <div class="legend-title">Color Indicators</div>
-            <div class="legend-items">
-                <div class="legend-item">
-                    <div class="legend-color correct"></div>
-                    <span>Correct</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color partial"></div>
-                    <span>Partial Overlap</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color wrong"></div>
-                    <span>Incorrect</span>
-                </div>
-            </div>
+        <div class="infinite-stats-banner" id="infiniteStatsBanner">
+            <div class="stat-box">Current Streak <span id="infCurrentStreak" class="stat-val">0</span></div>
+            <div class="stat-box">Max Streak <span id="infMaxStreak" class="stat-val">0</span></div>
+        </div>
+        <p class="streak-disclaimer">⚠️ Streaks only increase if you find the item in 6 or less guesses!</p>
+
+        <div class="infinite-controls-row">
+            <button id="resetBtn" class="game-btn">Reset Board</button>
+            <button id="revealBtn" class="game-btn reveal-btn">Reveal Answer</button>
+            <button id="nextRoundBtn" class="game-btn next-btn" style="display: none;">Next Round ➡️</button>
         </div>
 
         <div class="dev-panel" id="devPanel">
             <div><strong>Dev Console:</strong> Target Answer: <span id="devTarget" style="color:#c8aa6e;">Loading...</span></div>
-            <button class="dev-btn" id="resetBtn">🔄 Reroll Item</button>
         </div>
 
         <div id="loadingText" class="loading">Fetching current items database from Riot servers...</div>
-
-        <div class="daily-stats-banner">
-            <div class="stat-box">Current Streak <span id="currentStreak" class="stat-val">0</span></div>
-            <div class="stat-box">Highest Streak <span id="maxStreak" class="stat-val">0</span></div>
-            <div class="stat-box">Next Item In <span id="dailyTimer" class="stat-val timer-val">00:00:00</span></div>
-        </div>
 
         <div class="input-area" id="gameplayArea" style="display:none;">
             <input type="text" id="itemInput" placeholder="Type any item (e.g., Trinity Force, Long Sword...)" autocomplete="off">
@@ -538,7 +579,7 @@
         </div>
 
         <div id="winMessage" class="win-message"></div>
-
+        
         <table class="results-table">
             <thead>
                 <tr>
@@ -584,6 +625,27 @@
         </table>
     </div>
 
+    <div class="color-indicators-legend draggable-window" id="colorLegend">
+        <div class="legend-header" id="colorLegendHeader">
+            <span>Color Indicators</span>
+            <button id="closeLegendBtn" class="legend-close-x">&times;</button>
+        </div>
+        <div class="legend-body">
+            <div class="legend-row-item">
+                <div class="legend-indicator-box correct"></div>
+                <span><b>Correct:</b> Perfect match.</span>
+            </div>
+            <div class="legend-row-item">
+                <div class="legend-indicator-box partial"></div>
+                <span><b>Partial Overlap:</b> Shared traits.</span>
+            </div>
+            <div class="legend-row-item">
+                <div class="legend-indicator-box wrong"></div>
+                <span><b>Incorrect:</b> No match.</span>
+            </div>
+        </div>
+    </div>
+
     <div id="patchNotesModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -610,100 +672,33 @@
             </div>
 
             <div class="setting-row">
-                <span class="setting-label"><b>Show Color Indicators</b><br><small style="color:#a0a0a0;">Toggle legend visibility box above dashboard</small></span>
+                <span class="setting-label"><b>Show Color Legend</b><br><small style="color:#a0a0a0;">Displays the movable indicator box layer</small></span>
                 <label class="switch">
-                    <input type="checkbox" id="indicatorsToggle">
+                    <input type="checkbox" id="legendToggle" checked>
                     <span class="slider"></span>
                 </label>
             </div>
         </div>
     </div>
 
-<footer class="legal-footer">
-    <div style="margin-bottom: 12px;">
-        <a href="https://www.youtube.com/watch?v=-vH2b55TSHI" target="_blank" style="color: #c8aa6e; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px;">
-            📝 Feedback Form (WIP)
-        </a>
-    </div>
-    Null-Magic Mantdle is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
-</footer>
-
-<script>
-    // Elements references
-    const openSettingsBtn = document.getElementById('openSettingsBtn');
-    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-    const settingsModal = document.getElementById('settingsModal');
-    
-    const colorblindToggle = document.getElementById('colorblindToggle');
-    const indicatorsToggle = document.getElementById('indicatorsToggle');
-    const legendBox = document.getElementById('legendBox');
-
-    // Modal view handlers
-    openSettingsBtn.addEventListener('click', () => settingsModal.style.display = 'flex');
-    closeSettingsBtn.addEventListener('click', () => settingsModal.style.display = 'none');
-    
-    // Close modal if overlay is clicked
-    window.addEventListener('click', (e) => {
-        if (e.target === settingsModal) {
-            settingsModal.style.display = 'none';
-        }
-    });
-
-    // Setup LocalStorage management and states initialization
-    function initSettings() {
-        // --- 1. Colorblind Setting ---
-        // Defaults to off (false) unless stored otherwise
-        const storedColorblind = localStorage.getItem('colorblindMode') === 'true';
-        colorblindToggle.checked = storedColorblind;
-        if (storedColorblind) {
-            document.body.classList.add('colorblind-mode');
-        } else {
-            document.body.classList.remove('colorblind-mode');
-        }
-
-        // --- 2. Color Indicators Legend Box Setting ---
-        // Should be ON by default, check if user has previously toggled it off explicitly
-        const storedIndicators = localStorage.getItem('showIndicators');
+    <footer class="legal-footer">
+        <div style="margin-bottom: 12px;">
+            <a href="https://www.youtube.com/watch?v=-vH2b55TSHI" target="_blank" style="color: #c8aa6e; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px;">
+                📝 Feedback Form (WIP)
+            </a>
+        </div>
         
-        if (storedIndicators === null) {
-            // First time setup: set up on by default
-            indicatorsToggle.checked = true;
-            legendBox.style.display = 'block';
-            localStorage.setItem('showIndicators', 'true');
-        } else {
-            const isVisible = storedIndicators === 'true';
-            indicatorsToggle.checked = isVisible;
-            legendBox.style.display = isVisible ? 'block' : 'none';
-        }
-    }
+        Null-Magic Mantdle is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
+    </footer>
 
-    // Toggle Listeners
-    colorblindToggle.addEventListener('change', (e) => {
-        const isActive = e.target.checked;
-        if (isActive) {
-            document.body.classList.add('colorblind-mode');
-        } else {
-            document.body.classList.remove('colorblind-mode');
-        }
-        localStorage.setItem('colorblindMode', isActive);
-    });
-
-    indicatorsToggle.addEventListener('change', (e) => {
-        const isActive = e.target.checked;
-        legendBox.style.display = isActive ? 'block' : 'none';
-        localStorage.setItem('showIndicators', isActive);
-    });
-
-    // Run preferences routine on load
-    initSettings();
-
-
+    <script>
 const PATCH_VERSION = "16.10.1"; 
 const API_URL = `https://ddragon.leagueoflegends.com/cdn/${PATCH_VERSION}/data/en_US/item.json`;
 const IMG_BASE = `https://ddragon.leagueoflegends.com/cdn/${PATCH_VERSION}/img/item/`;
 
 let totalGuessesCount = 0;
-let activeGuesses = []; 
+let activeGuesses = [];
+let secretItem;
 
 const ITEM_GROUP_MAP = {
     "Annul": ["Verdant Barrier", "Banshee's Veil", "Edge of Night"],
@@ -1009,7 +1004,7 @@ async function initializeGameEngine() {
         document.getElementById("loadingText").style.display = "none";
         document.getElementById("gameplayArea").style.display = "flex";
 
-        initDailySecretItem();
+        initInfiniteRound();
 
     } catch (error) {
         console.error("Initialization fault detected:", error);
@@ -1017,240 +1012,117 @@ async function initializeGameEngine() {
     }
 }
 
-// --- SEEDED RANDOM GENERATOR (Ensures every player gets the exact same item sequence) ---
-function seededRandom(seed) {
-    const x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
-}
+function pickWeightedSecretItem() {
+    const roll = Math.floor(Math.random() * 100) + 1; 
+    let targetPool = [];
 
-// Helper to shuffle an array deterministically using our seeded generator
-function seededShuffle(array, seed) {
-    let m = array.length, t, i;
-    while (m) {
-        i = Math.floor(seededRandom(seed++) * m--);
-        t = array[m];
-        array[m] = array[i];
-        array[i] = t;
+    if (roll <= 75) {
+        targetPool = completeItemPool.filter(i => i.tier === "Legendary");
+    } else if (roll <= 95) {
+        targetPool = completeItemPool.filter(i => i.tier === "Epic");
+    } else {
+        targetPool = completeItemPool.filter(i => i.tier === "Common" || i.tier === "Starter");
     }
-    return array;
-}
 
-// --- DAILY MODE STORAGE & GENERATION ENGINE ---
-// --- MANUALLY QUEUE UP ITEMS HERE ---
-// If you want to force specific items for the upcoming days, add their exact database item IDs here!
-// Format: "YYYY-MM-DD": "ItemID" 
-// Leave it empty {} when you want the game to run on 100% random autopilot seed.
-const CUSTOM_DAILY_QUEUE = {
-    //"2026-05-23": "3031",  //Example: Forces Infinity Edge on May 23rd, 2026
-    //"2026-05-24": "3006", // Example: Forces Berserker's Greaves on May 24th, 2026
-    //"2026-05-25": "3089"  // Example: Forces Rabadon's Deathcap on May 25th, 2026
-};
-
-function initDailySecretItem() {
-    // 1. Calculate current Eastern Standard Time (EST) date string mapping
-    const now = new Date();
-    const estString = now.toLocaleString("en-US", { timeZone: "America/New_York" });
-    const estDate = new Date(estString);
+    if (targetPool.length === 0) targetPool = completeItemPool;
+    secretItem = targetPool[Math.floor(Math.random() * targetPool.length)];
     
-    const year = estDate.getFullYear();
-    const month = String(estDate.getMonth() + 1).padStart(2, '0');
-    const day = String(estDate.getDate()).padStart(2, '0');
-    const dayId = `${year}-${month}-${day}`;
+    document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier})`;
+}
+// --- INFINITE MODE DATA MANAGEMENT & RESTORATION ENGINE ---
 
-    // 2. CHECK THE CUSTOM QUEUE OVERRIDE FIRST
-    if (CUSTOM_DAILY_QUEUE[dayId]) {
-        const queuedItemId = CUSTOM_DAILY_QUEUE[dayId];
-        secretItem = completeItemPool.find(item => item.id === queuedItemId);
-        
-        if (secretItem) {
-            document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier}) [FORCED]`;
-            
-            // Sync up data records from storage
-            let dailyHistory = JSON.parse(localStorage.getItem('mantdleDailyHistory')) || { currentStreak: 0, maxStreak: 0 };
-            document.getElementById('currentStreak').textContent = dailyHistory.currentStreak || 0;
-            document.getElementById('maxStreak').textContent = dailyHistory.maxStreak || 0;
-            
-            // --- PROGRESS RESTORATION ENGINE FOR FORCED ITEMS ---
-            resultsBody.innerHTML = '';
-            activeGuesses = []; 
-            totalGuessesCount = 0;
+const revealBtn = document.getElementById('revealBtn');
+const nextRoundBtn = document.getElementById('nextRoundBtn');
 
-            if (dailyHistory.savedGuesses && dailyHistory.savedGuesses.length > 0) {
-                dailyHistory.savedGuesses.forEach(itemId => {
-                    const historicalItem = completeItemPool.find(i => i.id === itemId);
-                    if (historicalItem) renderGuessRowWithoutSaving(historicalItem); 
-                });
-            }
 
-            if (dailyHistory.hasWonToday) {
-                winMessage.style.display = 'block';
-                input.disabled = true;
-                input.placeholder = "Come back tomorrow!";
-            } else {
-                input.disabled = false;
-                input.placeholder = "Type an item name...";
-            }
 
-            startMidnightTimer();
-            return; 
-        }
+function saveInfiniteState() {
+    const history = getInfiniteHistory();
+    history.savedGuesses = activeGuesses.map(g => g.id);
+    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
+}
+
+
+function getInfiniteHistory() {
+    let history = JSON.parse(localStorage.getItem('mantdleInfiniteHistory'));
+    if (!history) {
+        history = {
+            currentStreak: 0,
+            maxStreak: 0,
+            hasFinishedRound: false,
+            savedGuesses: [],
+            currentSecretId: ""
+        };
+        localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
     }
+    return history;
+}
 
-    // 3. FALLBACK SEEDED GENERATOR ENGINE (Auto-pilot)
-    const legendaryItems = completeItemPool.filter(item => item.tier === "Legendary");
-    const epicItems = completeItemPool.filter(item => item.tier === "Epic");
-    const commonItems = completeItemPool.filter(item => item.tier === "Common");
-    const starterItems = completeItemPool.filter(item => item.tier === "Starter");
+function syncInfiniteDashboardVisuals() {
+    const history = getInfiniteHistory();
+    document.getElementById('infCurrentStreak').textContent = history.currentStreak;
+    document.getElementById('infMaxStreak').textContent = history.maxStreak;
+}
 
-    let dailyHistory = JSON.parse(localStorage.getItem('mantdleDailyHistory')) || {
-        lastPlayedDay: "",
-        hasWonToday: false,
-        legendaryOrder: [],
-        epicOrder: [],
-        commonOrder: [],
-        starterOrder: [],
-        legendaryIdx: 0,
-        epicIdx: 0,
-        commonIdx: 0,
-        starterIdx: 0,
-        currentStreak: 0,
-        maxStreak: 0
-    };
+function initInfiniteRound() {
+    const history = getInfiniteHistory();
+    syncInfiniteDashboardVisuals();
 
-    let baseSeed = year * 10000 + parseInt(month) * 100 + parseInt(day);
+    // Reset runtime DOM scratchpads
+    resultsBody.innerHTML = '';
+    activeGuesses = [];
+    totalGuessesCount = 0;
+    input.disabled = false;
+    input.value = '';
+    suggestionsBox.innerHTML = '';
+    winMessage.style.display = 'none';
+    nextRoundBtn.style.display = 'none';
+    
+    // Reset Reveal Button state visuals
+    revealBtn.disabled = false;
+    revealBtn.style.opacity = '1';
 
-    if (!dailyHistory.legendaryOrder.length) dailyHistory.legendaryOrder = seededShuffle(legendaryItems.map(i => i.id), baseSeed);
-    if (!dailyHistory.epicOrder.length) dailyHistory.epicOrder = seededShuffle(epicItems.map(i => i.id), baseSeed + 1);
-    if (!dailyHistory.commonOrder.length) dailyHistory.commonOrder = seededShuffle(commonItems.map(i => i.id), baseSeed + 2);
-    if (!dailyHistory.starterOrder.length) dailyHistory.starterOrder = seededShuffle(starterItems.map(i => i.id), baseSeed + 3);
-
-    if (dailyHistory.lastPlayedDay !== dayId) {
-        if (dailyHistory.lastPlayedDay !== "") {
-            const lastDate = new Date(dailyHistory.lastPlayedDay.replace(/-/g, '\/'));
-            const currentDate = new Date(dayId.replace(/-/g, '\/'));
-            const daysBetween = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
-            
-            if (daysBetween > 1 || !dailyHistory.hasWonToday) {
-                dailyHistory.currentStreak = 0;
-            }
-        }
-        
-        if (dailyHistory.lastPlayedDay !== "") {
-            dailyHistory.legendaryIdx++;
-            dailyHistory.epicIdx++;
-            dailyHistory.commonIdx++;
-            dailyHistory.starterIdx++;
-        }
-
-        if (dailyHistory.legendaryIdx >= dailyHistory.legendaryOrder.length) {
-            dailyHistory.legendaryIdx = 0;
-            dailyHistory.legendaryOrder = seededShuffle(legendaryItems.map(i => i.id), baseSeed + 9);
-        }
-        if (dailyHistory.epicIdx >= dailyHistory.epicOrder.length) {
-            dailyHistory.epicIdx = 0;
-            dailyHistory.epicOrder = seededShuffle(epicItems.map(i => i.id), baseSeed + 10);
-        }
-        if (dailyHistory.commonIdx >= dailyHistory.commonOrder.length) {
-            dailyHistory.commonIdx = 0;
-            dailyHistory.commonOrder = seededShuffle(commonItems.map(i => i.id), baseSeed + 11);
-        }
-        if (dailyHistory.starterIdx >= dailyHistory.starterOrder.length) {
-            dailyHistory.starterIdx = 0;
-            dailyHistory.starterOrder = seededShuffle(starterItems.map(i => i.id), baseSeed + 12);
-        }
-
-        dailyHistory.lastPlayedDay = dayId;
-        dailyHistory.hasWonToday = false;
-        // Wipe old saved guesses since a completely new day has arrived
-        dailyHistory.savedGuesses = []; 
-        localStorage.setItem('mantdleDailyHistory', JSON.stringify(dailyHistory));
+    // Restores active target parameters or rolls a fresh assignment seed
+    if (history.currentSecretId) {
+        secretItem = completeItemPool.find(item => item.id === history.currentSecretId);
     }
-
-    const tierRoll = seededRandom(baseSeed + 50);
-    let chosenItemId;
-
-    if (tierRoll < 0.85) { 
-        chosenItemId = dailyHistory.legendaryOrder[dailyHistory.legendaryIdx];
-    } else if (tierRoll < 0.95) { 
-        chosenItemId = dailyHistory.epicOrder[dailyHistory.epicIdx];
-    } else { 
-        const combineGroup = [...dailyHistory.commonOrder, ...dailyHistory.starterOrder];
-        const combinedIdx = (dailyHistory.commonIdx) % combineGroup.length;
-        chosenItemId = combineGroup[combinedIdx];
+    
+    if (!secretItem) {
+        pickWeightedSecretItem(); // Rolls a brand new random item
+        history.currentSecretId = secretItem.id;
+        history.hasFinishedRound = false;
+        history.savedGuesses = [];
+        localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
     }
-
-    secretItem = completeItemPool.find(item => item.id === chosenItemId) || completeItemPool[0];
 
     document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier})`;
-    document.getElementById('currentStreak').textContent = dailyHistory.currentStreak;
-    document.getElementById('maxStreak').textContent = dailyHistory.maxStreak;
 
-    // --- PROGRESS RESTORATION ENGINE FOR STANDARD GENERATED ITEMS ---
-    // Clear old visual rows out of the browser view
-    resultsBody.innerHTML = '';
-    activeGuesses = []; 
-    totalGuessesCount = 0;
-
-    // Re-draw any saved attempts made earlier today
-    if (dailyHistory.savedGuesses && dailyHistory.savedGuesses.length > 0) {
-        dailyHistory.savedGuesses.forEach(itemId => {
+    // Rebuild active attempts from storage on page initialization
+    if (history.savedGuesses && history.savedGuesses.length > 0) {
+        history.savedGuesses.forEach(itemId => {
             const historicalItem = completeItemPool.find(i => i.id === itemId);
             if (historicalItem) {
-                renderGuessRowWithoutSaving(historicalItem); 
+                renderGuessRowWithoutSaving(historicalItem);
             }
         });
     }
 
-    // Freeze or open input box depending on daily victory parameters
-    if (dailyHistory.hasWonToday) {
-        winMessage.style.display = 'block';
-        // Re-calculate victory text so it stays on screen upon loading a finished game
-        const trackingWord = dailyHistory.savedGuesses.length === 1 ? "guess" : "guesses";
-        if (dailyHistory.savedGuesses.length <= 3) {
-            winMessage.textContent = `🔥 You're a Legend! You found ${secretItem.name} in just ${dailyHistory.savedGuesses.length} ${trackingWord}!`;
-        } else if (dailyHistory.savedGuesses.length <= 8) {
-            winMessage.textContent = `✨ Great job! You got ${secretItem.name} in ${dailyHistory.savedGuesses.length} ${trackingWord}!`;
-        } else {
-            winMessage.textContent = `🎉 Well Done! You found ${secretItem.name} in ${dailyHistory.savedGuesses.length} ${trackingWord}!`;
-        }
+    // Freeze input interface parameters if user completed state profiles
+    if (history.hasFinishedRound) {
         input.disabled = true;
-        input.placeholder = "Come back tomorrow!";
-    } else {
-        input.disabled = false;
-        input.placeholder = "Type an item name...";
-    }
-
-    startMidnightTimer();
-}
-// Live timer engine reporting exact hours remaining until next midnight EST rollover
-function startMidnightTimer() {
-    const timerSpan = document.getElementById('dailyTimer');
-    
-    function updateTimer() {
-        const now = new Date();
-        const estString = now.toLocaleString("en-US", { timeZone: "America/New_York" });
-        const estDate = new Date(estString);
+        nextRoundBtn.style.display = 'block';
+        revealBtn.style.opacity = '0.3';
+        revealBtn.disabled = true;
         
-        // Calculate the exact target time for the next midnight rollover in EST
-        const midnightEst = new Date(estDate);
-        midnightEst.setHours(24, 0, 0, 0); 
-        
-        const diffMs = midnightEst - estDate;
-        if (diffMs <= 0) {
-            // Reload window execution loop instantly at rollover point to catch new pool configurations
-            location.reload();
-            return;
+        const isWin = activeGuesses.some(g => g.name === secretItem.name);
+        if (isWin) {
+            const trackingWord = totalGuessesCount === 1 ? "guess" : "guesses";
+            winMessage.textContent = `🎉 Round Completed! Found ${secretItem.name} in ${totalGuessesCount} ${trackingWord}!`;
+        } else {
+            winMessage.textContent = `👁️ Revealed Answer: The target item was ${secretItem.name}.`;
         }
-
-        const hours = String(Math.floor(diffMs / (1000 * 60 * 60))).padStart(2, '0');
-        const minutes = String(Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-        const seconds = String(Math.floor((diffMs % (1000 * 60)) / 1000)).padStart(2, '0');
-        
-        timerSpan.textContent = `${hours}:${minutes}:${seconds}`;
+        winMessage.style.display = 'block';
     }
-    
-    updateTimer();
-    setInterval(updateTimer, 1000);
 }
 
 const input = document.getElementById('itemInput');
@@ -1387,105 +1259,6 @@ function createAnimatedCell(htmlContent, feedbackClass, staggerSeconds) {
     return td;
 }
 
-// Automatically stringifies and writes active guesses into your profile history container
-function saveDailyGameState() {
-    const dailyHistory = JSON.parse(localStorage.getItem('mantdleDailyHistory'));
-    if (dailyHistory) {
-        dailyHistory.savedGuesses = activeGuesses.map(g => g.id);
-        localStorage.setItem('mantdleDailyHistory', JSON.stringify(dailyHistory));
-    }
-}
-
-// Re-renders a historic guess row on page refresh without playing tile delay animations
-function renderGuessRowWithoutSaving(guess) {
-    activeGuesses.push(guess);
-    totalGuessesCount++;
-    const row = document.createElement('tr');
-
-    // 1. Item Info
-    const itemWrapper = document.createElement('div');
-    itemWrapper.classList.add('item-cell');
-    const icon = document.createElement('img');
-    icon.src = guess.imgUrl;
-    const label = document.createElement('span');
-    label.textContent = guess.name;
-    itemWrapper.appendChild(icon);
-    itemWrapper.appendChild(label);
-    const nameClass = (guess.name === secretItem.name) ? 'correct' : 'wrong';
-    row.appendChild(createAnimatedCell(itemWrapper, nameClass, 0));
-
-    // 2. Rarity
-    const rarityClass = (guess.tier === secretItem.tier) ? 'correct' : 'wrong';
-    row.appendChild(createAnimatedCell(`<span>${guess.tier}</span>`, rarityClass, 0));
-
-    // 3. Class Pool
-    let classClass = 'wrong';
-    if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) {
-        classClass = 'correct';
-    } else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("N/A") && !guess.class.includes("Doran's Item")) {
-        classClass = 'partial';
-    }
-    row.appendChild(createAnimatedCell(`<span>${guess.class.join(', ')}</span>`, classClass, 0));
-
-    // 4. Gold Value
-    let goldContent = `<span>${guess.cost}</span>`;
-    const goldClass = (guess.cost === secretItem.cost) ? 'correct' : 'wrong';
-    if (guess.cost !== secretItem.cost) {
-        const arrow = guess.cost < secretItem.cost ? ' ⬆️' : ' ⬇️';
-        goldContent = `<span>${guess.cost}${arrow}</span>`;
-    }
-    row.appendChild(createAnimatedCell(goldContent, goldClass, 0));
-
-    // 5. Primary Stats
-    let statsClass = 'wrong';
-    if (JSON.stringify(guess.stats.sort()) === JSON.stringify(secretItem.stats.sort())) {
-        statsClass = 'correct';
-    } else if (guess.stats.some(s => secretItem.stats.includes(s)) && !guess.stats.includes("None")) {
-        statsClass = 'partial';
-    }
-    row.appendChild(createAnimatedCell(`<span>${guess.stats.join(', ')}</span>`, statsClass, 0));
-
-    // 6. Active?
-    const activeClass = (guess.hasActive === secretItem.hasActive) ? 'correct' : 'wrong';
-    const activeText = guess.hasActive ? "Yes" : "No";
-    row.appendChild(createAnimatedCell(`<span>${activeText}</span>`, activeClass, 0));
-
-    // 7. Common Components
-    let recipeText = "";
-    let recipeClass = 'wrong';
-    if (guess.name === secretItem.name) {
-        recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-        recipeClass = 'correct';
-    } else if (secretItem.recipe.includes(guess.name)) {
-        recipeText = guess.name;
-        recipeClass = 'partial';
-    } else {
-        const sharedComponents = guess.recipe.filter(r => secretItem.recipe.includes(r));
-        if (sharedComponents.length > 0) {
-            recipeText = sharedComponents.join(', ');
-            recipeClass = 'partial';
-        } else {
-            recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-            recipeClass = 'wrong';
-        }
-    }
-    row.appendChild(createAnimatedCell(`<span>${recipeText}</span>`, recipeClass, 0));
-
-    // 8. Item Group 
-    let groupClass = 'wrong';
-    const guessGroup = (guess.group || "").trim().toLowerCase();
-    const secretGroup = (secretItem.group || "").trim().toLowerCase();
-    const isGuessNone = (guessGroup === "" || guessGroup === "none");
-    const isSecretNone = (secretGroup === "" || secretGroup === "none");
-
-    if (guessGroup === secretGroup || (isGuessNone && isSecretNone)) {
-        groupClass = 'correct';
-    }
-    row.appendChild(createAnimatedCell(`<span>${guess.group}</span>`, groupClass, 0));
-
-    // Append to table immediately
-    resultsBody.insertBefore(row, resultsBody.firstChild);
-}
 function submitGuess(guess) {
     totalGuessesCount++;
     const row = document.createElement('tr');
@@ -1571,10 +1344,8 @@ function submitGuess(guess) {
 
     // 8. Item Group 
     let groupClass = 'wrong';
-    
     const guessGroup = (guess.group || "").trim().toLowerCase();
     const secretGroup = (secretItem.group || "").trim().toLowerCase();
-    
     const isGuessNone = (guessGroup === "" || guessGroup === "none");
     const isSecretNone = (secretGroup === "" || secretGroup === "none");
 
@@ -1585,9 +1356,9 @@ function submitGuess(guess) {
 
     resultsBody.insertBefore(row, resultsBody.firstChild);
     
-    // Track current active guess history in memory and write to localStorage
+    // Save state adjustments to memory structures
     activeGuesses.push(guess);
-    saveDailyGameState();
+    saveInfiniteState();
 
     if (guess.name === secretItem.name) {
         setTimeout(() => {
@@ -1602,32 +1373,157 @@ function submitGuess(guess) {
                 reactionMessage = `🎉 Well Done! You found ${secretItem.name} in ${totalGuessesCount} ${trackingWord}!`;
             }
 
-
             winMessage.textContent = reactionMessage;
             winMessage.style.display = 'block';
-            
-            let dailyHistory = JSON.parse(localStorage.getItem('mantdleDailyHistory'));
-            if (dailyHistory && !dailyHistory.hasWonToday) {
-                dailyHistory.hasWonToday = true;
-                dailyHistory.currentStreak += 1; 
-                if (dailyHistory.currentStreak > dailyHistory.maxStreak) {
-                    dailyHistory.maxStreak = dailyHistory.currentStreak;
-                }
-                dailyHistory.wonItemId = secretItem.id; 
-                localStorage.setItem('mantdleDailyHistory', JSON.stringify(dailyHistory));
-                
-                document.getElementById('currentStreak').textContent = dailyHistory.currentStreak;
-                document.getElementById('maxStreak').textContent = dailyHistory.maxStreak;
-            } 
             input.disabled = true;
+            nextRoundBtn.style.display = 'block';
+
+            // --- PROCESS COMPREHENSIVE STREAK LOGIC ---
+            const history = getInfiniteHistory();
+            if (!history.hasFinishedRound) {
+                history.hasFinishedRound = true;
+                
+                // Only award the streak run if it was won in 6 guesses or less!
+                if (totalGuessesCount <= 6) {
+                    history.currentStreak++;
+                    if (history.currentStreak > history.maxStreak) {
+                        history.maxStreak = history.currentStreak;
+                    }
+                } else {
+                    // Won, but took more than 6 guesses -> breaks streak!
+                    history.currentStreak = 0; 
+                    alert("You found it! But because it took more than 6 guesses, your active win streak has reset.");
+                }
+
+                localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
+                syncInfiniteDashboardVisuals();
+            }
         }, (delay + 0.6) * 1000);
     }
 }
+// Re-renders guess logs instantly upon browser refreshes without trigger animations
+function renderGuessRowWithoutSaving(guess) {
+    activeGuesses.push(guess);
+    totalGuessesCount++;
+    const row = document.createElement('tr');
+
+    const itemWrapper = document.createElement('div');
+    itemWrapper.classList.add('item-cell');
+    const icon = document.createElement('img');
+    icon.src = guess.imgUrl;
+    const label = document.createElement('span');
+    label.textContent = guess.name;
+    itemWrapper.appendChild(icon);
+    itemWrapper.appendChild(label);
+    row.appendChild(createAnimatedCell(itemWrapper, (guess.name === secretItem.name) ? 'correct' : 'wrong', 0));
+
+    row.appendChild(createAnimatedCell(`<span>${guess.tier}</span>`, (guess.tier === secretItem.tier) ? 'correct' : 'wrong', 0));
+
+    let classClass = 'wrong';
+    if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) classClass = 'correct';
+    else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("N/A") && !guess.class.includes("Doran's Item")) classClass = 'partial';
+    row.appendChild(createAnimatedCell(`<span>${guess.class.join(', ')}</span>`, classClass, 0));
+
+    let goldContent = `<span>${guess.cost}</span>`;
+    if (guess.cost !== secretItem.cost) {
+        goldContent = `<span>${guess.cost}${guess.cost < secretItem.cost ? ' ⬆️' : ' ⬇️'}</span>`;
+    }
+    row.appendChild(createAnimatedCell(goldContent, (guess.cost === secretItem.cost) ? 'correct' : 'wrong', 0));
+
+    let statsClass = 'wrong';
+    if (JSON.stringify(guess.stats.sort()) === JSON.stringify(secretItem.stats.sort())) statsClass = 'correct';
+    else if (guess.stats.some(s => secretItem.stats.includes(s)) && !guess.stats.includes("None")) statsClass = 'partial';
+    row.appendChild(createAnimatedCell(`<span>${guess.stats.join(', ')}</span>`, statsClass, 0));
+
+    row.appendChild(createAnimatedCell(`<span>${guess.hasActive ? "Yes" : "No"}</span>`, (guess.hasActive === secretItem.hasActive) ? 'correct' : 'wrong', 0));
+
+    let recipeText = "";
+    let recipeClass = 'wrong';
+    if (guess.name === secretItem.name) {
+        recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
+        recipeClass = 'correct';
+    } else if (secretItem.recipe.includes(guess.name)) {
+        recipeText = guess.name;
+        recipeClass = 'partial';
+    } else {
+        const sharedComponents = guess.recipe.filter(r => secretItem.recipe.includes(r));
+        if (sharedComponents.length > 0) {
+            recipeText = sharedComponents.join(', ');
+            recipeClass = 'partial';
+        } else {
+            recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
+            recipeClass = 'wrong';
+        }
+    }
+    row.appendChild(createAnimatedCell(`<span>${recipeText}</span>`, recipeClass, 0));
+
+    let groupClass = 'wrong';
+    if ((guess.group || "").trim().toLowerCase() === (secretItem.group || "").trim().toLowerCase() || ((guess.group || "").trim().toLowerCase() === "none" && (secretItem.group || "").trim().toLowerCase() === "none")) groupClass = 'correct';
+    row.appendChild(createAnimatedCell(`<span>${guess.group}</span>`, groupClass, 0));
+
+    resultsBody.insertBefore(row, resultsBody.firstChild);
+}
+
+// --- BOARD ACTION SYSTEM HANDLERS ---
+
+// Forces explicit board clear, wipes streaks, and updates item parameters
+// 1. DEFINE ALL DOM ELEMENTS FIRST
+const resetBtn = document.getElementById('resetBtn');
 
 const toggleDevBtn = document.getElementById('toggleDevBtn');
 const devPanel = document.getElementById('devPanel');
-const resetBtn = document.getElementById('resetBtn');
+const settingsModal = document.getElementById('settingsModal');
+const openSettingsBtn = document.getElementById('openSettingsBtn');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+const colorblindToggle = document.getElementById('colorblindToggle');
 
+// 2. ATTACH INFINITE MODE EVENT LISTENERS
+resetBtn.addEventListener('click', () => {
+    const confirmReset = confirm("Are you sure you want to reset? This clears the board and resets your current win streaks to zero.");
+    if (!confirmReset) return;
+
+    const history = getInfiniteHistory();
+    history.currentStreak = 0;
+    history.currentSecretId = ""; // Clear out the item ID reference entirely
+    history.hasFinishedRound = false;
+    history.savedGuesses = [];
+    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
+
+    secretItem = null; // Forces game to select a new item code block
+    initInfiniteRound();
+});
+
+revealBtn.addEventListener('click', () => {
+    const history = getInfiniteHistory();
+    if (history.hasFinishedRound) return;
+
+    const confirmReveal = confirm("Reveal answer? This counts as a loss and drops your active streaks back down to zero.");
+    if (!confirmReveal) return;
+
+    history.currentStreak = 0;
+    history.hasFinishedRound = true;
+    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
+    
+    syncInfiniteDashboardVisuals();
+
+    winMessage.textContent = `👁️ Revealed Answer: The target item was ${secretItem.name}.`;
+    winMessage.style.display = 'block';
+    input.disabled = true;
+    nextRoundBtn.style.display = 'block';
+});
+
+nextRoundBtn.addEventListener('click', () => {
+    const history = getInfiniteHistory();
+    history.currentSecretId = ""; // Wipes old item out of storage
+    history.hasFinishedRound = false;
+    history.savedGuesses = [];
+    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
+
+    secretItem = null; // Clear working reference
+    initInfiniteRound();
+});
+
+// 3. INTERFACE LISTENERS (DEV MODAL, SETTINGS)
 toggleDevBtn.addEventListener('click', () => {
     if (devPanel.style.display === 'flex') {
         devPanel.style.display = 'none';
@@ -1645,47 +1541,33 @@ toggleDevBtn.addEventListener('click', () => {
     }
 });
 
-// Settings Modal Engine Controls
-// Open settings window panel
 openSettingsBtn.addEventListener('click', () => {
     settingsModal.style.display = 'flex';
 });
 
-// Close settings window panel
 closeSettingsBtn.addEventListener('click', () => {
     settingsModal.style.display = 'none';
 });
 
-// Sync checkbox switch state to toggle CSS layout rules dynamically across active elements
 colorblindToggle.addEventListener('change', () => {
     if (colorblindToggle.checked) {
         document.body.classList.add('colorblind-mode');
-        localStorage.setItem('colorblindMode', 'true'); // Saves setting for next visit
+        localStorage.setItem('colorblindMode', 'true');
     } else {
         document.body.classList.remove('colorblind-mode');
         localStorage.setItem('colorblindMode', 'false');
     }
 });
 
-// Load color settings on page boot
 if (localStorage.getItem('colorblindMode') === 'true') {
     colorblindToggle.checked = true;
     document.body.classList.add('colorblind-mode');
 }
 
-// Close setting modal automatically when tracking background area escape clicks
 window.addEventListener('click', (e) => {
     if (e.target === settingsModal) {
         settingsModal.style.display = 'none';
     }
-});
-resetBtn.addEventListener('click', () => {
-    resultsBody.innerHTML = '';
-    winMessage.style.display = 'none';
-    totalGuessesCount = 0;
-    input.disabled = false;
-    input.value = '';
-    suggestionsBox.innerHTML = '';
 });
 // ==========================================
 //  EDIT PATCH NOTES HERE!
@@ -1695,90 +1577,19 @@ resetBtn.addEventListener('click', () => {
 // Minor -> Noticeable improvement like new stat filter or rearranged table columns or something 
 // Patch -> Small bug fixes or tiny corrections that do not adda ny new content and stuff
 const MY_PATCH_NOTES = [
-    {
+        {
         version: "Future Plans/Ideas",
         changes: [
-            "Publicly hosted domain",
-            "Shareable link if you win",
-            "Player Counts",
-            "Better Background and Graphics",
-            "Feedback Form",
-            "Better Mobile Support",
-            "Gamemode with arena/ayhem items?",
-            "Gamemode for Augments?",
-            "Gamemode for runes?",
-            "Optimize ts dogwater ahh code" 
+            "Make this layout and stuff look better", 
         ]
     },
     {
-        version: "v1.3.0 (Beta)",
+        version: "Infinite Mode v1.0.0",
         changes: [
-            "Added Daily Mode where you can visit each day and try to guess the daily item and increase your daily streak",
-            "Added Infinite Mode where you can try to get the highest win streak possible. Win streaks only increase if you get the item in 6 or less guesses (subject to change).",
-            "Made it so if you leave during a session it will save your progress to your local storage so you wont lose anything",
-            "Updated gamemode menu to include both of these and changed the icons a bit to reflect them",
-            "Updated the colors indicator helper thing to be able to be toggled off in the settings",
-            "Made it so it remembers your settings"
+            "Added to gamemode tab"
         ]
     },
-    {
-        version: "v1.2.2 (Beta)",
-        changes: [
-            "Fixed Luden's echo not showing up as a mage item",
-            "BT acryonym added for bloodthirster",
-            "Optmized code a bit in preparation for infinite mode and daily mode"
-        ]
-    },
-    {
-        version: "v1.2.1 (Beta)",
-        changes: [
-            "Fixed filter incorrectly removing Bloodletter's Curse and Hollow Radiance from pool",
-            "Updated search suggestions to include common acronyms like LDR or BORK to be able to search with",
-            "Fixed gamemode selector not working correctly",
-            "Added gamemode selector to alpha version to easily change back to original mode"
-        ]
-    },
-    {
-        version: "v1.2.0 (Beta)",
-        changes: [
-            "Fixed bug where guessing an item with Item Group 'None' would incorrectly display as red when Item Group is actually 'None'",
-            "Added settings menu with colorblind support",
-            "Added gamemodes/versions dropdown for future content and expansion",
-            "Added alpha version of Null-Magic Mantdle to gamemodes dropdown menu"
-        ]
-    },
-    {
-        version: "v1.1.1 (Beta)",
-        changes: [
-            "Updated Item Group description to be less confusing",
-            "Changed class pool when item has no class from 'Component' to 'N/A'",
-            "Added Future Plans in patch notes for a To-Do list" 
-        ]
-    },
-    {
-        
-        version: "v1.1.0 (Beta)",
-        changes: [
-            "Moved the 'Item Group' column to the far-right side of the results row.",
-            "Added descriptive tooltips when hovering over table column headers.",
-            "Fixed a visual glitch where a thin black line clipped underneath the search box input.",
-            "Updated items added in Season 16 to match appropriate rarity, classes, and item groups",
-            "Fixed Tenacity not showing up in Primary Stats column"
-            
-        ]
-    },
-    {
-        version: "v1.0.0 (Alpha Release)",
-        changes: [
-            "Launched Null-Magic Mantdle core guess engine using live server items database.",
-            "Integrated prioritized search auto-suggestions and standard grid color feedback.",
-            "Updated item patch from 14.23.1 to 16.10.1",
-            "Added Item Group column to help guessing",
-            "Added Patch Notes/Changelogs Button to track development progress",
-            "Removed Arena and ARAM items from list"
-            
-        ]
-    }
+    
     // To add a new version in the future, just copy/paste block format:
     // ,{
     //     version: "v1.2.0",
@@ -1832,7 +1643,95 @@ window.addEventListener('click', (e) => {
         patchNotesModal.style.display = 'none';
     }
 });
+// --- DRAGGABLE WINDOW ENGINE ---
+const colorLegend = document.getElementById('colorLegend');
+const legendToggle = document.getElementById('legendToggle');
+const closeLegendBtn = document.getElementById('closeLegendBtn');
+
+// 1. Drag and Drop Mouse Handlers
+makeElementDraggable(colorLegend);
+
+function makeElementDraggable(elmnt) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    const header = document.getElementById(elmnt.id + "Header");
+    
+    if (header) {
+        header.onmousedown = dragMouseDown;
+    } else {
+        elmnt.onmousedown = dragMouseDown;
+    }
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // Get mouse cursor position at startup
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // Call a function whenever the cursor moves
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // Calculate new cursor position
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        // Set element's new position, checking borders
+        let topPos = elmnt.offsetTop - pos2;
+        let leftPos = elmnt.offsetLeft - pos1;
+        
+        // Simple viewport boundaries constraint
+        if (topPos < 0) topPos = 0;
+        if (leftPos < 0) leftPos = 0;
+        if (topPos > window.innerHeight - elmnt.offsetHeight) topPos = window.innerHeight - elmnt.offsetHeight;
+        if (leftPos > window.innerWidth - elmnt.offsetWidth) leftPos = window.innerWidth - elmnt.offsetWidth;
+
+        elmnt.style.top = topPos + "px";
+        elmnt.style.left = leftPos + "px";
+        elmnt.style.bottom = "auto";
+        elmnt.style.right = "auto";
+    }
+
+    function closeDragElement() {
+        // Stop moving when mouse button is released
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+// 2. Settings Toggle Controls
+legendToggle.addEventListener('change', () => {
+    if (legendToggle.checked) {
+        colorLegend.style.display = 'block';
+        localStorage.setItem('showColorLegend', 'true');
+    } else {
+        colorLegend.style.display = 'none';
+        localStorage.setItem('showColorLegend', 'false');
+    }
+});
+
+// Little corner 'x' button inside the widget window itself
+closeLegendBtn.addEventListener('click', () => {
+    colorLegend.style.display = 'none';
+    legendToggle.checked = false;
+    localStorage.setItem('showColorLegend', 'false');
+});
+
+// Load user selection state from localStorage on layout boots
+if (localStorage.getItem('showColorLegend') === 'false') {
+    legendToggle.checked = false;
+    colorLegend.style.display = 'none';
+} else {
+    legendToggle.checked = true;
+    colorLegend.style.display = 'block';
+}
 initializeGameEngine();
+
 </script>
 </body>
 </html>
