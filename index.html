@@ -631,7 +631,7 @@ const ITEM_CLASS_MAPS = {
         "Luden's Companion", "Malignance", "Morellonomicon", "Nashor's Tooth", "Perplexity", 
         "Rabadon's Deathcap", "Riftmaker", "Rite of Ruin", "Rod of Ages", "Rylai's Crystal Scepter", 
         "Shadowflame", "Stormsurge", "Sword of Blossoming Dawn", "Void Staff", "Wordless Promise", "Zhonya's Hourglass",
-        "Mejai's Soulstealer", "Actualizer"
+        "Mejai's Soulstealer", "Actualizer", "Luden's Echo"
     ],
     Support: [
         "Abyssal Mask", "Ardent Censer", "Chemtech Putrifier", "Dawncore", "Echoes of Helia", 
@@ -731,6 +731,118 @@ function deriveItemClass(itemName, tags) {
     return assignedClasses.length > 0 ? assignedClasses : ["N/A"];
 }
 
+// --- STATIC EXCLUSION CONFIGURATIONS ---
+const EXCLUDED_BOOT_NAMES = [
+    "Zephyr", "Gunmetal Greaves", "Dreadnought Striders", "Relentless Pursuit",
+    "Armored Advance", "Noxian Fervor", "Noxian Gait", "Noxian Might", "Immortal Path",
+    "Spellslinger's Shoes", "Swiftmarch", "Crimson Lucidity", " Chainlaced Crushers"
+];
+
+const EXCLUDED_ARENA_NAMES = [
+    "Prismatic", "Anima Visage", "Perplexity", "Rite of Ruin", "Sword of Blossoming Dawn",
+    "Wordless Promise", "Atma's Reckoning", "Trailblazer", "Symbiotic Soles", 
+    "Virtue of the Triforce", "Cyclonic Slicers", "Fish Tank", "Radiant Virtue"
+];
+
+const CUSTOM_EXCLUDED_ITEMS = new Set([
+    "Black Hole Gauntlet", "Cloak of Starry Night", "Crown of the Shattered Queen", 
+    "Cruelty", "Darksteel Talons", "Decapitator", "Demon King's Crown", "Demonic Embrace", 
+    "Detonation Orb", "Diamond-Tipped Spear", "Divine Sunderer", "Dragonheart", 
+    "Duskblade of Draktharr", "Eleisa's Miracle", "Empyrean Promise", "Everfrost", 
+    "Flesheater", "Force of Entropy", "Fulmination", "Galeforce", "Gambler's Blade", 
+    "Gargoyle Stoneplate", "Goredrinker", "Hamstringer", "Hemomancer's Helm", 
+    "Hexbolt Companion", "Innervating Locket", "Kinkou Jitte", "Lightning Rod", 
+    "Mirage Blade", "Moonflair Spellblade", "Night Harvester", "Prowler's Claw", 
+    "Puppeteer", "Pyromancer's Cloak", "Radiant Virtue", "Reality Fracture", 
+    "Reaper's Toll", "Regicide", "Reverberation", "Runecarver", "Sanguine Gift", 
+    "Shield of Molten Stone", "Sword of the Divine", "Talisman of Ascension", 
+    "Turbo Chemtank", "Twilight's Edge", "Twin Mask", "Veigar's Talisman of Ascension"
+]);
+
+const EXCLUDED_NAME_KEYWORDS = [
+    "AHR-", "Gangplank Placeholder", "Rune Weaver", "Bounty", 
+    "Scorchclaw", "Gustwalker", "Mosstomper", "Guardian's "
+];
+
+// --- CORE HELPER UTILITIES ---
+
+/**
+ * Validates if an item should be allowed in the gameplay pool.
+ */
+function shouldExcludeItem(details, data) {
+    const itemName = details.name;
+    const tags = details.tags || [];
+    const descLower = details.description ? details.description.toLowerCase() : "";
+
+    // 1. Core API Flag Checks
+    if (!details.maps || details.maps["11"] !== true) return true;
+    if (details.inStore === false || details.hideFromAll === true) return true;
+    if (details.gold && details.gold.purchasable === false) return true;
+    if (details.requiredChampion || details.requiredAlly) return true;
+
+    // 2. Map Mode & Game Variant Filters
+    if (descLower.includes("arena") || descLower.includes("nexus blitz") || 
+        descLower.includes("prismatic item") || descLower.includes("anvil")) return true;
+
+    // 3. Strict String/Set Matching
+    if (CUSTOM_EXCLUDED_ITEMS.has(itemName)) return true;
+    if (EXCLUDED_ARENA_NAMES.some(name => itemName.includes(name))) return true;
+    if (EXCLUDED_NAME_KEYWORDS.some(kw => itemName.includes(kw))) return true;
+
+    // 4. Consumable and Vision Filters
+    if (tags.includes("Consumable") || tags.includes("Vision") || 
+        ["Potion", "Elixir", "Ward", "Scarecrow"].some(kw => itemName.includes(kw))) return true;
+
+    // 5. Tier 3 Boot Verification Rules
+    if (descLower.includes("level 15 required") || descLower.includes("requires level 15") || 
+        descLower.includes("blessing of noxus") || descLower.includes("feats of strength")) return true;
+
+    if (EXCLUDED_BOOT_NAMES.some(bootName => itemName.includes(bootName))) return true;
+
+    // Check nested boot recursion (Tier 3 check)
+    if (details.from && tags.includes("Boots")) {
+        for (const parentId of details.from) {
+            const parentItem = data[parentId];
+            if (parentItem?.from) {
+                for (const grandParentId of parentItem.from) {
+                    if (grandParentId === "1001" || grandParentId === "2422") return true;
+                }
+            }
+        }
+    }
+
+    return false; // Item is safe to keep!
+}
+
+/**
+ * Calculates the appropriate tier of an item based on properties.
+ */
+function determineItemTier(itemName, totalGold, tags, itemClasses, details) {
+    if (itemName.includes("Doran's")) return "Starter";
+    if (!itemClasses.includes("Boots") && !itemClasses.includes("N/A")) return "Legendary";
+    if (totalGold >= 2000) return "Legendary";
+    
+    const commonBaseItems = [
+        "Slightly Magical Boots", "Boots", "B.F. Sword", "B. F. Sword", "Needlessly Large Rod", 
+        "Long Sword", "Dagger", "Ruby Crystal", "Amplifying Tome", "Faerie Charm", 
+        "Sapphire Crystal", "Cloth Armor", "Null-Magic Mantle"
+    ];
+    if (commonBaseItems.includes(itemName)) return "Common";
+    
+    if (tags.includes("Lane") || tags.includes("Jungle") || 
+        (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
+        return "Starter";
+    }
+    
+    if (totalGold >= 900 || tags.includes("Boots") || (totalGold > 500 && details.from?.length > 0)) {
+        return "Epic";
+    }
+    
+    return "Common";
+}
+
+// --- MAIN ENGINE INITIALIZATION ---
+
 async function initializeGameEngine() {
     try {
         const response = await fetch(API_URL);
@@ -740,104 +852,33 @@ async function initializeGameEngine() {
         completeItemPool = [];
         indexedItemMap = data;
 
+        // Track parsed items by name to instantly prevent duplicates
+        const processedNames = new Set();
+
         for (const [id, details] of Object.entries(data)) {
             const itemName = details.name;
+
+            // Skip instantly if duplicate or fails filter rules
+            if (processedNames.has(itemName)) continue;
+            if (shouldExcludeItem(details, data)) continue;
+
+            processedNames.add(itemName);
+
             const tags = details.tags || [];
             const totalGold = details.gold ? details.gold.total : 0;
             const descLower = details.description ? details.description.toLowerCase() : "";
-
-            if (completeItemPool.some(existingItem => existingItem.name === itemName)) continue;
-
-            if (!details.maps || details.maps["11"] !== true) continue;
-            if (details.inStore === false || details.hideFromAll === true) continue;
-            if (details.gold && details.gold.purchasable === false) continue;
-            if (details.requiredChampion) continue;
-            if (details.requiredAlly) continue; 
-
-            let isTier3Boot = false;
-            if (descLower.includes("level 15 required") || descLower.includes("requires level 15") || 
-                descLower.includes("blessing of noxus") || descLower.includes("feats of strength")) {
-                isTier3Boot = true;
-            }
-            if (!isTier3Boot && details.from && tags.includes("Boots")) {
-                for (const parentId of details.from) {
-                    const parentItem = data[parentId];
-                    if (parentItem && parentItem.from) {
-                        for (const grandParentId of parentItem.from) {
-                            if (grandParentId === "1001" || grandParentId === "2422") {
-                                isTier3Boot = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            const tier3BootNames = [
-                "Zephyr", "Gunmetal Greaves", "Dreadnought Striders", "Relentless Pursuit",
-                "Armored Advance", "Noxian Fervor", "Noxian Gait", "Noxian Might", "Immortal Path",
-                "Spellslinger's Shoes", "Swiftmarch", "Crimson Lucidity"," Chainlaced Crushers"
-            ];
-            if (tier3BootNames.some(bootName => itemName.includes(bootName))) {
-                isTier3Boot = true;
-            }
-            if (isTier3Boot) continue;
-
-            const arenaExclusiveNames = [
-                "Prismatic", "Anima Visage", "Perplexity", "Rite of Ruin", "Sword of Blossoming Dawn",
-                "Wordless Promise", "Atma's Reckoning", "Trailblazer", 
-                 "Symbiotic Soles", "Virtue of the Triforce", "Cyclonic Slicers",
-                "Fish Tank", "Radiant Virtue"
-            ];
-            if (arenaExclusiveNames.some(name => itemName.includes(name))) continue;
             
-            const customExcludedItems = [
-                "Black Hole Gauntlet", "Cloak of Starry Night", "Crown of the Shattered Queen", 
-                "Cruelty", "Darksteel Talons", "Decapitator", "Demon King's Crown", "Demonic Embrace", 
-                "Detonation Orb", "Diamond-Tipped Spear", "Divine Sunderer", "Dragonheart", 
-                "Duskblade of Draktharr", "Eleisa's Miracle", "Empyrean Promise", "Everfrost", 
-                "Flesheater", "Force of Entropy", "Fulmination", "Galeforce", "Gambler's Blade", 
-                "Gargoyle Stoneplate", "Goredrinker", "Hamstringer", "Hemomancer's Helm", 
-                "Hexbolt Companion", "Innervating Locket", "Kinkou Jitte", "Lightning Rod", 
-                "Mirage Blade", "Moonflair Spellblade", "Night Harvester", "Prowler's Claw", 
-                "Puppeteer", "Pyromancer's Cloak", "Radiant Virtue", "Reality Fracture", 
-                "Reaper's Toll", "Regicide", "Reverberation", "Runecarver", "Sanguine Gift", 
-                "Shield of Molten Stone", "Sword of the Divine", "Talisman of Ascension", 
-                "Turbo Chemtank", "Twilight's Edge", "Twin Mask", "Veigar's Talisman of Ascension"
-            ];
-            if (customExcludedItems.includes(itemName)) continue;
-
-            if (descLower.includes("arena") || descLower.includes("nexus blitz") || 
-                descLower.includes("prismatic item") || descLower.includes("anvil")) continue;
-
-            if (tags.includes("Consumable") || tags.includes("Vision") || itemName.includes("Potion") || itemName.includes("Elixir") || itemName.includes("Ward") || itemName.includes("Scarecrow")) continue;
-            if (itemName.includes("AHR-") || itemName.includes("Gangplank Placeholder") || itemName.includes("Rune Weaver") || itemName.includes("Bounty") || itemName.includes("Scorchclaw") || itemName.includes("Gustwalker") || itemName.includes("Mosstomper") || itemName.includes("Guardian's ")) continue;
-
             const itemClasses = deriveItemClass(itemName, tags);
-            let itemTier = "Common"; 
+            const itemTier = determineItemTier(itemName, totalGold, tags, itemClasses, details);
 
-            if (itemName.includes("Doran's")) {
-                itemTier = "Starter";
-            } else if (!itemClasses.includes("Boots") && !itemClasses.includes("N/A")) {
-                itemTier = "Legendary";
-            } else if (totalGold >= 2000) {
-                itemTier = "Legendary";
-            } else if (["Slightly Magical Boots", "Boots", "B.F. Sword", "B. F. Sword", "Needlessly Large Rod", "Long Sword", "Dagger", "Ruby Crystal", "Amplifying Tome", "Faerie Charm", "Sapphire Crystal", "Cloth Armor", "Null-Magic Mantle"].includes(itemName)) {
-                itemTier = "Common";
-            } else if (tags.includes("Lane") || tags.includes("Jungle") || (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
-                itemTier = "Starter";
-            } else if (totalGold >= 900 || tags.includes("Boots") || (totalGold > 500 && details.from && details.from.length > 0)) {
-                itemTier = "Epic";
-            } else {
-                itemTier = "Common";
-            }
-
+            // Build clean recipe array safely
             const cleanRecipe = [];
             if (details.from) {
                 const uniqueSet = new Set();
                 details.from.forEach(childId => {
                     if (data[childId]) uniqueSet.add(data[childId].name);
                 });
-                uniqueSet.forEach(name => cleanRecipe.push(name));
+                cleanRecipe.push(...uniqueSet);
             }
 
             const hasActiveEffect = /\bactive\b/.test(descLower);
@@ -856,8 +897,10 @@ async function initializeGameEngine() {
             });
         }
 
+        // Sort pool alphabetically
         completeItemPool.sort((a, b) => a.name.localeCompare(b.name));
 
+        // Render game layout viewports
         document.getElementById("loadingText").style.display = "none";
         document.getElementById("gameplayArea").style.display = "flex";
 
@@ -924,6 +967,8 @@ input.addEventListener('input', () => {
         "sg": "steraksgage",
         "wa": "wintersapproach",
         "dmp": "deadmansplate",
+        "bt": "bloodthirster",
+        "roa": "rodofages"
     };
 
     const scoredItems = completeItemPool.map(item => {
@@ -1230,6 +1275,14 @@ const MY_PATCH_NOTES = [
             "Gamemode for runes?",
             "Optimize ts dogwater ahh code" 
 
+        ]
+    },
+    {
+        version: "v1.2.2 (Beta)",
+        changes: [
+            "Fixed Luden's echo not showing up as a mage item",
+            "BT acryonym added for bloodthirster",
+            "Optmized code a bit in preparation for infinite mode and daily mode"
         ]
     },
     {
