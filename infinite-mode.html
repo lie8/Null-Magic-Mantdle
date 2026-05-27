@@ -3,583 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Null-Magic Mantdle</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121214;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-        h1 { color: #f0e6d2; margin-bottom: 5px; font-size: 32px; font-weight: 700; letter-spacing: 0.5px; }
-        .subtitle { color: #a0a0a0; margin-bottom: 15px; }
-        
-        .title-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 6px;
-            border: 2px solid #c8aa6e;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            margin-bottom: 15px;
-        }
-
-        .game-container {
-            width: 100%;
-            max-width: 1050px;
-            text-align: center;
-        }
-
-        .dev-panel {
-            background-color: #1c1c22;
-            border: 1px dashed #c8aa6e;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            display: none; 
-            justify-content: space-around;
-            align-items: center;
-        }
-        .dev-btn {
-            background-color: #c8aa6e;
-            color: #121214;
-            border: none;
-            padding: 8px 12px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-        .dev-btn:hover { background-color: #e0ca9e; }
-
-        .input-area {
-            position: relative;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: center;
-        }
-        input {
-            width: 350px;
-            padding: 12px;
-            background-color: #1e1e22;
-            border: 2px solid #3c3c41;
-            color: white;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        input:focus { outline: none; border-color: #c8aa6e; }
-        input:disabled { background-color: #333; cursor: not-allowed;}
-        
-        .suggestions {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 350px;
-            background: #1e1e22;
-            border: 1px solid #3c3c41;
-            border-top: none;
-            z-index: 10;
-            max-height: 200px;
-            overflow-y: auto;
-            text-align: left;
-            border-radius: 0 0 4px 4px;
-        }
-
-        .suggestions:empty {
-            border: none;
-        }
-        .suggestion-item {
-            padding: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .suggestion-item img { width: 24px; height: 24px; border-radius: 4px; }
-        .suggestion-item:hover { background-color: #2a2a30; color: #c8aa6e; }
-
-        .results-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 6px;
-            margin-top: 20px;
-            perspective: 1000px;
-        }
-        th { 
-            color: #a0a0a0; 
-            font-weight: 600; 
-            padding-bottom: 5px; 
-            font-size: 13px; 
-            position: relative;
-            z-index: 30; 
-        }
-        
-        /* Tooltip Container Framework */
-        .tooltip {
-            cursor: help;
-            border-bottom: 1px dotted #777;
-            display: inline-block;
-        }
-        
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 210px;
-            background-color: #1c1c22;
-            color: #fff;
-            text-align: center;
-            border: 1px solid #c8aa6e;
-            border-radius: 5px;
-            padding: 8px 10px;
-            position: absolute;
-            z-index: 20;
-            bottom: 125%; 
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            font-size: 11px;
-            font-weight: normal;
-            line-height: 1.4;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-            pointer-events: none;
-        }
-
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-            transform: translateX(-50%) translateZ(10px); 
-        }
-
-        td {
-            padding: 0;
-            text-align: center;
-            font-weight: bold;
-            font-size: 13px;
-            border-radius: 4px;
-            vertical-align: middle;
-            height: 80px;
-            background-color: transparent;
-        }
-        
-        .flip-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-        }
-        
-        .flip-animate {
-            animation: wordleTopDownFlip 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        .card-front, .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.4);
-            box-sizing: border-box;
-            padding: 6px;
-        }
-
-        .card-front {
-            background-color: #1e1e22;
-            border: 1px solid #3c3c41;
-            color: #ffffff;
-        }
-
-        .card-back {
-            transform: rotateX(180deg);
-            color: #ffffff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
-            line-height: 1.3;
-        }
-
-        .item-cell { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 6px; 
-            width: 100%;
-        }
-        .item-cell img { 
-            width: 36px; 
-            height: 36px; 
-            border-radius: 0px !important;
-            border: 1px solid #555; 
-            flex-shrink: 0;
-        }
-        .item-cell span {
-            font-size: 11px;
-            word-break: break-word;
-        }
-
-        .correct { background-color: #1c773e !important; } 
-        .partial { background-color: #b58900 !important; } 
-        .wrong { background-color: #aa3838 !important; }   
-
-        @keyframes wordleTopDownFlip {
-            0% { transform: rotateX(0deg); }
-            50% { transform: rotateX(90deg); } 
-            100% { transform: rotateX(180deg); }
-        }
-
-        .win-message {
-            color: #4bb543;
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 20px;
-            display: none;
-        }
-            
-        .legal-footer {
-            max-width: 800px;
-            text-align: center;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
-            line-height: 1.5;
-            margin-top: 50px;
-            padding: 15px 0;
-            margin-left: auto;
-            margin-right: auto;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            box-sizing: border-box;
-        }
-        .loading { font-size: 18px; color: #c8aa6e; }
-        
-        .patch-btn {
-            background: #2a2a30; 
-            color: #a0a0a0; 
-            border: 1px solid #3c3c41; 
-            padding: 6px 12px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 12px;
-            margin-left: 8px;
-        }
-        .patch-btn:hover {
-            border-color: #c8aa6e;
-            color: #c8aa6e;
-        }
-
-        .modal-overlay {
-            display: none; 
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #1c1c22;
-            border: 1px solid #c8aa6e;
-            border-radius: 6px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80%;
-            overflow-y: auto;
-            padding: 20px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.8);
-            position: relative;
-            text-align: left;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #3c3c41;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            color: #f0e6d2;
-            font-size: 20px;
-        }
-
-        .close-modal-btn {
-            background: transparent;
-            border: none;
-            color: #a0a0a0;
-            font-size: 20px;
-            cursor: pointer;
-        }
-        .close-modal-btn:hover { color: #ffffff; }
-
-        .patch-version {
-            color: #c8aa6e;
-            font-weight: bold;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            font-size: 15px;
-        }
-        .patch-list {
-            margin: 0;
-            padding-left: 20px;
-            color: #e0e0e0;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-        .header-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .mode-dropdown {
-            background: #2a2a30;
-            color: #e0e0e0;
-            border: 1px solid #3c3c41;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            outline: none;
-            font-weight: 600;
-        }
-        .mode-dropdown:hover {
-            border-color: #c8aa6e;
-            color: #c8aa6e;
-        }
-
-        .settings-btn {
-            background: #2a2a30;
-            color: #a0a0a0;
-            border: 1px solid #3c3c41;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .settings-btn:hover {
-            border-color: #c8aa6e;
-            color: #c8aa6e;
-        }
-
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #3c3c41;
-        }
-        .setting-label {
-            font-size: 14px;
-            color: #e0e0e0;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-        }
-        .switch input { display: none; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #3c3c41;
-            transition: .3s;
-            border-radius: 22px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider { background-color: #c8aa6e; }
-        input:checked + .slider:before { transform: translateX(22px); }
-
-        .infinite-stats-banner {
-            display: flex;
-            justify-content: space-around;
-            background: #1a1a1f;
-            border: 1px solid #3c3c41;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            width: 100%;
-            font-size: 12px;
-        }
-        .infinite-controls-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            width: 100%;
-        }
-        .game-btn {
-            flex: 1;
-            background: #1e1e24;
-            border: 1px solid #3c3c41;
-            color: #a0a0a0;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-        .game-btn:hover {
-            border-color: #c8aa6e;
-            color: #fff;
-        }
-        .reveal-btn:hover {
-            border-color: #ff4655;
-            color: #ff4655;
-        }
-        .next-btn {
-            background: #c8aa6e;
-            color: #1a1a1f;
-            border-color: #c8aa6e;
-        }
-        .next-btn:hover {
-            background: #e2c282;
-            color: #1a1a1f;
-        }
-        
-        body.colorblind-mode .correct { background-color: #005fcc !important; } 
-        body.colorblind-mode .partial { background-color: #ffcc00 !important; color: #121214 !important; } 
-        body.colorblind-mode .wrong { background-color: #ff6b00 !important; } 
-
-        .streak-disclaimer {
-            color: #a0a0a0;
-            font-size: 11px;
-            font-style: italic;
-            margin-top: -10px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        /* FLOATING DRAGGABLE COMPONENT GRAPHICS SHEET RULES */
-        .draggable-window {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 999;
-            background: #1a1a1f;
-            border: 2px solid #3c3c41;
-            border-radius: 6px;
-            width: 260px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        .legend-header {
-            background: #24242a;
-            border-bottom: 1px solid #3c3c41;
-            padding: 8px 12px;
-            cursor: move;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #c8aa6e;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            user-select: none;
-        }
-        .legend-close-x {
-            background: none;
-            border: none;
-            color: #a0a0a0;
-            font-size: 16px;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0;
-        }
-        .legend-close-x:hover {
-            color: #ff4655;
-        }
-        .legend-body {
-            padding: 12px;
-            text-align: left;
-        }
-        .legend-row-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-            font-size: 12px;
-            color: #a0a0a0;
-        }
-        .legend-row-item:last-child {
-            margin-bottom: 0;
-        }
-        .legend-indicator-box {
-            width: 14px;
-            height: 14px;
-            border-radius: 3px;
-            flex-shrink: 0;
-        }
-    </style>
+    <title>Null-Magic Mantdle - Infinite Mode</title>
+    <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-
     <div class="game-container">
+        <!-- Header -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; width: 100%;">
             <h1 style="margin: 0;">Null-Magic Mantdle</h1>
             <div class="header-toolbar">
                 <select id="modeSelect" class="mode-dropdown" onchange="location = this.value;">
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/"> ☀️ Daily Mode </option>
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/infinite-mode.html" selected> ♾️ Infinite Mode (Current) </option>
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/null-magic-mantdle (Patch 14.23.1 Stable).html">📜 Old Alpha Version</option>
+                    <option value="index.html">☀️ Daily Mode</option>
+                    <option value="infinite-mode.html" selected>♾️ Infinite Mode (Current)</option>
+                    <option value="https://lie8.github.io/Null-Magic-Mantdle/null-magic-mantdle-alpha.html" >📜 Old Alpha Version </option>
+
                 </select>
-
-                <button id="patchNotesBtn" class="patch-btn" style="margin: 0;">📜 Patch Notes</button>
-                
-                <button id="toggleDevBtn" style="background: #2a2a30; color: #a0a0a0; border: 1px solid #3c3c41; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                    🛠️ Toggle Dev Panel
-                </button>
-
+                <button id="patchNotesBtn" class="patch-btn">📜 Patch Notes</button>
                 <button id="openSettingsBtn" class="settings-btn">⚙️</button>
             </div>
         </div>
-        <img class="title-icon" src="https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/1033.png" alt="Null-Magic Mantle Icon">
-        <p class="subtitle" style="text-align: left; margin-top: 0;">Powered by official Riot Data Dragon assets (League Patch 16.10.1)</p>
 
-        <div class="infinite-stats-banner" id="infiniteStatsBanner">
+        <img class="title-icon" src="https://ddragon.leagueoflegends.com/cdn/14.23.1/img/item/1033.png" alt="Null-Magic Mantle Icon">
+        <p class="subtitle" style="text-align: left; margin-top: 0;">
+            Powered by official Riot Data Dragon assets (League Patch 16.10.1)
+        </p>
+
+        <!-- Stats Banner -->
+        <div class="stats-banner" id="infiniteStatsBanner">
             <div class="stat-box">Current Streak <span id="infCurrentStreak" class="stat-val">0</span></div>
             <div class="stat-box">Max Streak <span id="infMaxStreak" class="stat-val">0</span></div>
         </div>
         <p class="streak-disclaimer">⚠️ Streaks only increase if you find the item in 6 or less guesses!</p>
 
+        <!-- Game Controls -->
         <div class="infinite-controls-row">
             <button id="resetBtn" class="game-btn">Reset Board</button>
             <button id="revealBtn" class="game-btn reveal-btn">Reveal Answer</button>
             <button id="nextRoundBtn" class="game-btn next-btn" style="display: none;">Next Round ➡️</button>
         </div>
 
+        <!-- Dev Panel -->
         <div class="dev-panel" id="devPanel">
-            <div><strong>Dev Console:</strong> Target Answer: <span id="devTarget" style="color:#c8aa6e;">Loading...</span></div>
+            <div><strong>Dev Console:</strong> Target: <span id="devTarget" style="color:#c8aa6e;">Loading...</span></div>
         </div>
 
-        <div id="loadingText" class="loading">Fetching current items database from Riot servers...</div>
+        <!-- Loading -->
+        <div id="loadingText" class="loading">Fetching items database from Riot servers...</div>
 
+        <!-- Input Area -->
         <div class="input-area" id="gameplayArea" style="display:none;">
-            <input type="text" id="itemInput" placeholder="Type any item (e.g., Trinity Force, Long Sword...)" autocomplete="off">
+            <input type="text" id="itemInput" placeholder="Type an item name..." autocomplete="off">
             <div id="suggestions" class="suggestions"></div>
         </div>
 
+        <!-- Win Message -->
         <div id="winMessage" class="win-message"></div>
-        
+
+        <!-- Results Table -->
         <table class="results-table">
             <thead>
                 <tr>
@@ -601,22 +81,22 @@
                     </th>
                     <th style="width: 14%;">
                         <div class="tooltip">Primary Stats
-                            <span class="tooltiptext">Base stats/attributes grants by the item. Green on perfect match, Yellow on any partial elements.</span>
+                            <span class="tooltiptext">Base stats/attributes granted by the item. Green on perfect match, Yellow on partial overlap.</span>
                         </div>
                     </th>
                     <th style="width: 9%;">
                         <div class="tooltip">Active?
-                            <span class="tooltiptext">Whether the item possesses a click-activated active ability. <br><b>Examples:</b> Zhonya's, Tiamat.</span>
+                            <span class="tooltiptext">Whether the item has a click-activated active ability. <br><b>Examples:</b> Zhonya's, Tiamat.</span>
                         </div>
                     </th>
                     <th style="width: 15%;">
                         <div class="tooltip">Common Components
-                            <span class="tooltiptext">Shows any overlapping ingredients or recipes share path with target.</span>
+                            <span class="tooltiptext">Shows any overlapping ingredients or recipe paths with target.</span>
                         </div>
                     </th>
                     <th style="width: 13%;">
                         <div class="tooltip">Item Group
-                            <span class="tooltiptext">Classifies items with unique named passives or properties that do not stack with each other.<br><b>Example:</b> Lifeline (Sterak's / Maw) or Spellblade (Sheen / Lich Bane)</span>
+                            <span class="tooltiptext">Classifies items with unique named passives that don't stack.<br><b>Example:</b> Lifeline (Sterak's / Maw) or Spellblade (Sheen / Lich Bane)</span>
                         </div>
                     </th>
                 </tr>
@@ -625,7 +105,8 @@
         </table>
     </div>
 
-    <div class="color-indicators-legend draggable-window" id="colorLegend">
+    <!-- Draggable Color Legend -->
+    <div class="draggable-window" id="colorLegend">
         <div class="legend-header" id="colorLegendHeader">
             <span>Color Indicators</span>
             <button id="closeLegendBtn" class="legend-close-x">&times;</button>
@@ -646,6 +127,39 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Game Settings</h2>
+                <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
+            </div>
+            
+            <div class="setting-row">
+                <span class="setting-label">
+                    <b>Colorblind Mode</b><br>
+                    <small style="color:#a0a0a0;">Changes indicators to Blue / Yellow / Orange</small>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="colorblindToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">
+                    <b>Show Color Legend</b><br>
+                    <small style="color:#a0a0a0;">Displays the movable indicator box</small>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="legendToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patch Notes Modal -->
     <div id="patchNotesModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -656,1082 +170,54 @@
         </div>
     </div>
 
-    <div id="settingsModal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px;">
+    <!-- Stats Modal -->
+    <div id="statsModal" class="modal-overlay">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2>Game Settings</h2>
-                <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
+                <h2>Player Statistics</h2>
+                <button id="closeStatsBtn" class="close-modal-btn">&times;</button>
             </div>
             
-            <div class="setting-row">
-                <span class="setting-label"><b>Colorblind Mode</b><br><small style="color:#a0a0a0;">Changes indicators to Blue / Yellow / Orange</small></span>
-                <label class="switch">
-                    <input type="checkbox" id="colorblindToggle">
-                    <span class="slider"></span>
-                </label>
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <span id="uiPlayedLabel" class="stats-number">0</span>
+                    <span class="stats-label">Played</span>
+                </div>
+                <div class="stats-card">
+                    <span id="uiWinPctLabel" class="stats-number">0%</span>
+                    <span class="stats-label">Win %</span>
+                </div>
+                <div class="stats-card">
+                    <span id="uiStreakLabel" class="stats-number">0</span>
+                    <span class="stats-label">Current Streak</span>
+                </div>
+                <div class="stats-card">
+                    <span id="uiAvgGuessesLabel" class="stats-number">0</span>
+                    <span class="stats-label">Avg Guesses</span>
+                </div>
             </div>
 
-            <div class="setting-row">
-                <span class="setting-label"><b>Show Color Legend</b><br><small style="color:#a0a0a0;">Displays the movable indicator box layer</small></span>
-                <label class="switch">
-                    <input type="checkbox" id="legendToggle" checked>
-                    <span class="slider"></span>
-                </label>
+            <div id="shareSection">
+                <h3>Game Complete!</h3>
+                <p id="sharePreview"></p>
+                <button id="shareBtn" class="share-action-btn">🔗 Copy Share Summary</button>
             </div>
         </div>
     </div>
 
+    <!-- Footer -->
     <footer class="legal-footer">
         <div style="margin-bottom: 12px;">
-            <a href="https://www.youtube.com/watch?v=-vH2b55TSHI" target="_blank" style="color: #c8aa6e; text-decoration: none; font-weight: 600; font-size: 13px; letter-spacing: 0.5px;">
-                📝 Feedback Form (WIP)
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfaA3ehGkZpLdsk66WE9c410mySWTN0zHF4xRyFNoQ5sEo73Q/viewform?usp=publish-editor" target="_blank">
+                📝 Feedback Form
             </a>
         </div>
-        
         Null-Magic Mantdle is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
     </footer>
 
-    <script>
-const PATCH_VERSION = "16.10.1"; 
-const API_URL = `https://ddragon.leagueoflegends.com/cdn/${PATCH_VERSION}/data/en_US/item.json`;
-const IMG_BASE = `https://ddragon.leagueoflegends.com/cdn/${PATCH_VERSION}/img/item/`;
-
-let totalGuessesCount = 0;
-let activeGuesses = [];
-let secretItem;
-
-const ITEM_GROUP_MAP = {
-    "Annul": ["Verdant Barrier", "Banshee's Veil", "Edge of Night"],
-    "Blight": ["Blighting Jewel", "Bloodletter's Curse", "Cryptbloom", "Terminus", "Void Staff"],
-    "Boots": ["Berserker's Greaves", "Boots", "Boots of Swiftness", "Ionian Boots of Lucidity", "Mercury's Treads", "Plated Steelcaps", "Slightly Magical Boots", "Sorcerer's Shoes", "Symbiotic Soles", "Synchronized Souls", "Zephyr"],
-    "Dirk": ["Serrated Dirk"],
-    "Elixir": ["Elixir of Iron", "Elixir of Sorcery", "Elixir of Wrath"],
-    "Eternity": ["Catalyst of Aeons", "Rod of Ages"],
-    "Fatality": ["Last Whisper", "Black Cleaver", "Lord Dominik's Regards", "Mortal Reminder", "Serylda's Grudge", "Terminus"],
-    "Glory": ["Dark Seal", "Mejai's Soulstealer"],
-    "Guardian": ["Guardian's Blade", "Guardian's Hammer", "Guardian's Horn", "Guardian's Orb"],
-    "Hydra": ["Tiamat", "Profane Hydra", "Ravenous Hydra", "Stridebreaker", "Titanic Hydra"],
-    "Immolate": ["Bami's Cinder", "Sunfire Aegis", "Hollow Radiance"],
-    "Jungle / Support": ["Bounty of Worlds", "Bloodsong", "Celestial Opposition", "Dream Maker", "Gustwalker Hatchling", "Mosstomper Seedling", "Scorchclaw Pup", "Solstice Sleigh", "Zaz'Zak's Realmspike"],
-    "Lifeline": ["Archangel's Staff", "Hexdrinker", "Immortal Shieldbow", "Maw of Malmortius", "Seraph's Embrace", "Sterak's Gage", "Protoplasm Harness"],
-    "Manaflow": ["Archangel's Staff", "Fimbulwinter", "Manamune", "Muramana", "Seraph's Embrace", "Tear of the Goddess", "Winter's Approach"],
-    "Momentum": ["Dead Man's Plate", "Trailblazer"],
-    "Potion": ["Health Potion", "Refillable Potion"],
-    "Quicksilver": ["Mercurial Scimitar", "Quicksilver Sash"],
-    "Sightstone": ["Watchful Wardstone", "Vigilant Wardstone"],
-    "Spellblade": ["Sheen", "Bloodsong", "Iceborn Gauntlet", "Lich Bane", "Trinity Force", "Dusk and Dawn"],
-    "Starter": ["Doran's Blade", "Doran's Ring", "Doran's Shield", "Gustwalker Hatchling", "Mosstomper Seedling", "Scorchclaw Pup", "World Atlas", "Runic Compass"],
-    "Stasis": ["Seeker's Armguard", "Shattered Armguard", "Zhonya's Hourglass"]
-};
-
-const ITEM_CLASS_MAPS = {
-    Mage: [
-        "Archangel's Staff", "Banshee's Veil", "Bloodletter's Curse", "Blackfire Torch", "Cosmic Drive", "Cryptbloom", 
-        "Hextech Gunblade", "Hextech Rocketbelt", "Horizon Focus", "Liandry's Torment", "Lich Bane", 
-        "Luden's Companion", "Malignance", "Morellonomicon", "Nashor's Tooth", "Perplexity", 
-        "Rabadon's Deathcap", "Riftmaker", "Rite of Ruin", "Rod of Ages", "Rylai's Crystal Scepter", 
-        "Shadowflame", "Stormsurge", "Sword of Blossoming Dawn", "Void Staff", "Wordless Promise", "Zhonya's Hourglass",
-        "Mejai's Soulstealer", "Actualizer", "Luden's Echo"
-    ],
-    Support: [
-        "Abyssal Mask", "Ardent Censer", "Chemtech Putrifier", "Dawncore", "Echoes of Helia", 
-        "Frozen Heart", "Imperial Mandate", "Knight's Vow", "Locket of the Iron Solari", "Mikael's Blessing", 
-        "Moonstone Renewer", "Redemption", "Rite of Ruin", "Shurelya's Battlesong", 
-        "Staff of Flowing Water", "Sword of Blossoming Dawn", "Thornmail", "Wordless Promise", "Zeke's Convergence", 
-        "Whispering Circlet", "Morellonomicon", "Bandlepipes"
-    ],
-    Tank: [
-        "Abyssal Mask", "Anathema's Chains", "Bloodletter's Curse", "Dead Man's Plate", "Force of Nature", 
-        "Frozen Heart", "Heartsteel", "Hollow Radiance", "Iceborn Gauntlet", "Jak'Sho, The Protean", 
-        "Kaenic Rookern", "Knight's Vow", "Locket of the Iron Solari", "Overlord's Bloodmail", "Randuin's Omen", "Spirit Visage", 
-        "Sterak's Gage", "Sunfire Aegis", "Thornmail", "Titanic Hydra", "Trailblazer", "Unending Despair", 
-        "Warmog's Armor", "Winter's Approach", "Zeke's Convergence", "Bandlepipes", "Protoplasm Harness"
-    ],
-    Marksman: [
-        "Atma's Reckoning", "Blade of the Ruined King", "Bloodthirster", "Essence Reaver", "Guardian Angel", 
-        "Guinsoo's Rageblade", "Immortal Shieldbow", "Infinity Edge", "Kraken Slayer", "Lord Dominik's Regards", 
-        "Manamune", "Maw of Malmortius", "Mercurial Scimitar", "Mortal Reminder", "Nashor's Tooth", 
-        "Navori Flickerblade", "Phantom Dancer", "Rapid Firecannon", "Runaan's Hurricane", "Statikk Shiv", 
-        "Terminus", "The Collector", "Wit's End", "Yun Tal Wildarrows", "Zephyr", "Stormrazor", "Fiendhunter Bolts",
-        "Hexoptics C44"
-    ],
-    Assassin: [
-        "Axiom Arc", "Chempunk Chainsword", "Edge of Night", "Guardian Angel", "Hellfire Hatchet", 
-        "Hextech Gunblade", "Hubris", "Manamune", "Maw of Malmortius", "Opportunity", "Profane Hydra", 
-        "Serpent's Fang", "Serylda's Grudge", "Spectral Cutlass", "The Collector", "Voltaic Cyclosword", "Youmuu's Ghostblade",
-        "Bastionbreaker"
-    ],
-    Fighter: [
-        "Atma's Reckoning", "Black Cleaver", "Blade of the Ruined King", "Chempunk Chainsword", "Death's Dance", 
-        "Dead Man's Plate", "Eclipse", "Experimental Hexplate", "Guardian Angel", "Hullbreaker", 
-        "Iceborn Gauntlet", "Manamune", "Maw of Malmortius", "Overlord's Bloodmail", "Ravenous Hydra", "Spear of Shojin", 
-        "Sterak's Gage", "Stridebreaker", "Sundered Sky", "Terminus", "Titanic Hydra", "Trinity Force", "Wit's End", "Zephyr", "Dusk and Dawn",
-        "Endless Hunger", "Bloodthirster"
-    ]
-};
-
-function getItemGroupName(itemName) {
-    for (const [groupName, items] of Object.entries(ITEM_GROUP_MAP)) {
-        if (items.includes(itemName)) {
-            return groupName;
-        }
-    }
-    return "None";
-}
-
-function processItemStats(details) {
-    const statsList = [];
-    const s = details.stats || {};
-    const text = details.description ? details.description.toLowerCase() : "";
-
-    if (s.FlatPhysicalDamageMod > 0) statsList.push("AD");
-    if (s.FlatMagicDamageMod > 0) statsList.push("AP");
-    if (s.FlatArmorMod > 0) statsList.push("Armor");
-    if (s.FlatSpellBlockMod > 0) statsList.push("MR");
-    if (s.PercentAttackSpeedMod > 0) statsList.push("Attack Speed");
-    if (s.FlatCritChanceMod > 0) statsList.push("Crit");
-    if (s.FlatMPPoolMod > 0 || s.FlatMPMod > 0) statsList.push("Mana");
-    if (s.FlatMovementSpeedMod > 0 || s.PercentMovementSpeedMod > 0) statsList.push("Move Speed");
-    if (s.FlatHPPoolMod > 0) statsList.push("Health");
-
-    const statsBlockMatch = text.match(/<stats>([\s\S]*?)<\/stats>/);
-    if (statsBlockMatch) {
-        const statsSectionText = statsBlockMatch[1];
-        if (statsSectionText.includes("ability haste")) statsList.push("Haste");
-        if (statsSectionText.includes("armor penetration") || statsSectionText.includes("armor pen")) statsList.push("Armor Pen");
-        if (statsSectionText.includes("magic penetration") || statsSectionText.includes("magic pen")) statsList.push("Magic Pen");
-        if (statsSectionText.includes("lethality")) statsList.push("Lethality");
-        if (statsSectionText.includes("life steal") || statsSectionText.includes("lifesteal")) statsList.push("Lifesteal");
-        if (statsSectionText.includes("omnivamp")) statsList.push("Omnivamp");
-        if (statsSectionText.includes("base health regen") || statsSectionText.includes("health regeneration")) statsList.push("Health Regen");
-        if (statsSectionText.includes("base mana regen") || statsSectionText.includes("mana regeneration")) statsList.push("Mana Regen");
-        if (statsSectionText.includes("heal and shield power")) statsList.push("Heal/Shield Power");
-        if (statsSectionText.includes("tenacity")) statsList.push("Tenacity");
-    }
-
-    const uniqueStats = [...new Set(statsList)];
-    return uniqueStats.length > 0 ? uniqueStats : ["None"];
-}
-
-function deriveItemClass(itemName, tags) {
-    if (itemName.includes("Doran's")) return ["Doran's Item"];
-    if (tags.includes("Boots") || itemName.includes("Boots") || itemName === "Plated Steelcaps" || itemName === "Mercury's Treads") {
-        return ["Boots"];
-    }
-    
-    const assignedClasses = [];
-    const lowerItemName = itemName.toLowerCase();
-
-    for (const [className, itemNamesList] of Object.entries(ITEM_CLASS_MAPS)) {
-        const lowerClassList = itemNamesList.map(name => name.toLowerCase());
-        if (lowerClassList.includes(lowerItemName)) {
-            assignedClasses.push(className);
-        }
-    }
-    return assignedClasses.length > 0 ? assignedClasses : ["N/A"];
-}
-
-// --- STATIC EXCLUSION CONFIGURATIONS ---
-const EXCLUDED_BOOT_NAMES = [
-    "Zephyr", "Gunmetal Greaves", "Dreadnought Striders", "Relentless Pursuit",
-    "Armored Advance", "Noxian Fervor", "Noxian Gait", "Noxian Might", "Immortal Path",
-    "Spellslinger's Shoes", "Swiftmarch", "Crimson Lucidity", " Chainlaced Crushers"
-];
-
-const EXCLUDED_ARENA_NAMES = [
-    "Prismatic", "Anima Visage", "Perplexity", "Rite of Ruin", "Sword of Blossoming Dawn",
-    "Wordless Promise", "Atma's Reckoning", "Trailblazer", "Symbiotic Soles", 
-    "Virtue of the Triforce", "Cyclonic Slicers", "Fish Tank", "Radiant Virtue"
-];
-
-const CUSTOM_EXCLUDED_ITEMS = new Set([
-    "Black Hole Gauntlet", "Cloak of Starry Night", "Crown of the Shattered Queen", 
-    "Cruelty", "Darksteel Talons", "Decapitator", "Demon King's Crown", "Demonic Embrace", 
-    "Detonation Orb", "Diamond-Tipped Spear", "Divine Sunderer", "Dragonheart", 
-    "Duskblade of Draktharr", "Eleisa's Miracle", "Empyrean Promise", "Everfrost", 
-    "Flesheater", "Force of Entropy", "Fulmination", "Galeforce", "Gambler's Blade", 
-    "Gargoyle Stoneplate", "Goredrinker", "Hamstringer", "Hemomancer's Helm", 
-    "Hexbolt Companion", "Innervating Locket", "Kinkou Jitte", "Lightning Rod", 
-    "Mirage Blade", "Moonflair Spellblade", "Night Harvester", "Prowler's Claw", 
-    "Puppeteer", "Pyromancer's Cloak", "Radiant Virtue", "Reality Fracture", 
-    "Reaper's Toll", "Regicide", "Reverberation", "Runecarver", "Sanguine Gift", 
-    "Shield of Molten Stone", "Sword of the Divine", "Talisman of Ascension", 
-    "Turbo Chemtank", "Twilight's Edge", "Twin Mask", "Veigar's Talisman of Ascension"
-]);
-
-const EXCLUDED_NAME_KEYWORDS = [
-    "AHR-", "Gangplank Placeholder", "Rune Weaver", "Bounty", 
-    "Scorchclaw", "Gustwalker", "Mosstomper", "Guardian's "
-];
-
-// --- CORE HELPER UTILITIES ---
-
-/**
- * Validates if an item should be allowed in the gameplay pool.
- */
-function shouldExcludeItem(details, data) {
-    const itemName = details.name;
-    const tags = details.tags || [];
-    const descLower = details.description ? details.description.toLowerCase() : "";
-
-    // 1. Core API Flag Checks
-    if (!details.maps || details.maps["11"] !== true) return true;
-    if (details.inStore === false || details.hideFromAll === true) return true;
-    if (details.gold && details.gold.purchasable === false) return true;
-    if (details.requiredChampion || details.requiredAlly) return true;
-
-    // 2. Map Mode & Game Variant Filters
-    if (descLower.includes("arena") || descLower.includes("nexus blitz") || 
-        descLower.includes("prismatic item") || descLower.includes("anvil")) return true;
-
-    // 3. Strict String/Set Matching
-    if (CUSTOM_EXCLUDED_ITEMS.has(itemName)) return true;
-    if (EXCLUDED_ARENA_NAMES.some(name => itemName.includes(name))) return true;
-    if (EXCLUDED_NAME_KEYWORDS.some(kw => itemName.includes(kw))) return true;
-
-    // 4. Consumable and Vision Filters
-    if (tags.includes("Consumable") || tags.includes("Vision") || 
-        ["Potion", "Elixir", "Ward", "Scarecrow"].some(kw => itemName.includes(kw))) return true;
-
-    // 5. Tier 3 Boot Verification Rules
-    if (descLower.includes("level 15 required") || descLower.includes("requires level 15") || 
-        descLower.includes("blessing of noxus") || descLower.includes("feats of strength")) return true;
-
-    if (EXCLUDED_BOOT_NAMES.some(bootName => itemName.includes(bootName))) return true;
-
-    // Check nested boot recursion (Tier 3 check)
-    if (details.from && tags.includes("Boots")) {
-        for (const parentId of details.from) {
-            const parentItem = data[parentId];
-            if (parentItem?.from) {
-                for (const grandParentId of parentItem.from) {
-                    if (grandParentId === "1001" || grandParentId === "2422") return true;
-                }
-            }
-        }
-    }
-
-    return false; // Item is safe to keep!
-}
-
-/**
- * Calculates the appropriate tier of an item based on properties.
- */
-function determineItemTier(itemName, totalGold, tags, itemClasses, details) {
-    if (itemName.includes("Doran's")) return "Starter";
-    if (!itemClasses.includes("Boots") && !itemClasses.includes("N/A")) return "Legendary";
-    if (totalGold >= 2000) return "Legendary";
-    
-    const commonBaseItems = [
-        "Slightly Magical Boots", "Boots", "B.F. Sword", "B. F. Sword", "Needlessly Large Rod", 
-        "Long Sword", "Dagger", "Ruby Crystal", "Amplifying Tome", "Faerie Charm", 
-        "Sapphire Crystal", "Cloth Armor", "Null-Magic Mantle"
-    ];
-    if (commonBaseItems.includes(itemName)) return "Common";
-    
-    if (tags.includes("Lane") || tags.includes("Jungle") || 
-        (totalGold <= 450 && (tags.includes("HealthRegen") || tags.includes("ManaRegen")))) {
-        return "Starter";
-    }
-    
-    if (totalGold >= 900 || tags.includes("Boots") || (totalGold > 500 && details.from?.length > 0)) {
-        return "Epic";
-    }
-    
-    return "Common";
-}
-
-// --- MAIN ENGINE INITIALIZATION ---
-
-async function initializeGameEngine() {
-    try {
-        const response = await fetch(API_URL);
-        const rawPayload = await response.json();
-        const data = rawPayload.data;
-
-        completeItemPool = [];
-        indexedItemMap = data;
-
-        // Track parsed items by name to instantly prevent duplicates
-        const processedNames = new Set();
-
-        for (const [id, details] of Object.entries(data)) {
-            const itemName = details.name;
-
-            // Skip instantly if duplicate or fails filter rules
-            if (processedNames.has(itemName)) continue;
-            if (shouldExcludeItem(details, data)) continue;
-
-            processedNames.add(itemName);
-
-            const tags = details.tags || [];
-            const totalGold = details.gold ? details.gold.total : 0;
-            const descLower = details.description ? details.description.toLowerCase() : "";
-            
-            const itemClasses = deriveItemClass(itemName, tags);
-            const itemTier = determineItemTier(itemName, totalGold, tags, itemClasses, details);
-
-            // Build clean recipe array safely
-            const cleanRecipe = [];
-            if (details.from) {
-                const uniqueSet = new Set();
-                details.from.forEach(childId => {
-                    if (data[childId]) uniqueSet.add(data[childId].name);
-                });
-                cleanRecipe.push(...uniqueSet);
-            }
-
-            const hasActiveEffect = /\bactive\b/.test(descLower);
-
-            completeItemPool.push({
-                id: id,
-                name: itemName,
-                tier: itemTier,
-                class: itemClasses,
-                group: getItemGroupName(itemName),
-                cost: totalGold,
-                stats: processItemStats(details), 
-                hasActive: hasActiveEffect,
-                recipe: cleanRecipe,
-                imgUrl: IMG_BASE + details.image.full
-            });
-        }
-
-        // Sort pool alphabetically
-        completeItemPool.sort((a, b) => a.name.localeCompare(b.name));
-
-        // Render game layout viewports
-        document.getElementById("loadingText").style.display = "none";
-        document.getElementById("gameplayArea").style.display = "flex";
-
-        initInfiniteRound();
-
-    } catch (error) {
-        console.error("Initialization fault detected:", error);
-        document.getElementById("loadingText").textContent = "API error occurs. Check configuration variables.";
-    }
-}
-
-function pickWeightedSecretItem() {
-    const roll = Math.floor(Math.random() * 100) + 1; 
-    let targetPool = [];
-
-    if (roll <= 75) {
-        targetPool = completeItemPool.filter(i => i.tier === "Legendary");
-    } else if (roll <= 95) {
-        targetPool = completeItemPool.filter(i => i.tier === "Epic");
-    } else {
-        targetPool = completeItemPool.filter(i => i.tier === "Common" || i.tier === "Starter");
-    }
-
-    if (targetPool.length === 0) targetPool = completeItemPool;
-    secretItem = targetPool[Math.floor(Math.random() * targetPool.length)];
-    
-    document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier})`;
-}
-// --- INFINITE MODE DATA MANAGEMENT & RESTORATION ENGINE ---
-
-const revealBtn = document.getElementById('revealBtn');
-const nextRoundBtn = document.getElementById('nextRoundBtn');
-
-
-
-function saveInfiniteState() {
-    const history = getInfiniteHistory();
-    history.savedGuesses = activeGuesses.map(g => g.id);
-    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
-}
-
-
-function getInfiniteHistory() {
-    let history = JSON.parse(localStorage.getItem('mantdleInfiniteHistory'));
-    if (!history) {
-        history = {
-            currentStreak: 0,
-            maxStreak: 0,
-            hasFinishedRound: false,
-            savedGuesses: [],
-            currentSecretId: ""
-        };
-        localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
-    }
-    return history;
-}
-
-function syncInfiniteDashboardVisuals() {
-    const history = getInfiniteHistory();
-    document.getElementById('infCurrentStreak').textContent = history.currentStreak;
-    document.getElementById('infMaxStreak').textContent = history.maxStreak;
-}
-
-function initInfiniteRound() {
-    const history = getInfiniteHistory();
-    syncInfiniteDashboardVisuals();
-
-    // Reset runtime DOM scratchpads
-    resultsBody.innerHTML = '';
-    activeGuesses = [];
-    totalGuessesCount = 0;
-    input.disabled = false;
-    input.value = '';
-    suggestionsBox.innerHTML = '';
-    winMessage.style.display = 'none';
-    nextRoundBtn.style.display = 'none';
-    
-    // Reset Reveal Button state visuals
-    revealBtn.disabled = false;
-    revealBtn.style.opacity = '1';
-
-    // Restores active target parameters or rolls a fresh assignment seed
-    if (history.currentSecretId) {
-        secretItem = completeItemPool.find(item => item.id === history.currentSecretId);
-    }
-    
-    if (!secretItem) {
-        pickWeightedSecretItem(); // Rolls a brand new random item
-        history.currentSecretId = secretItem.id;
-        history.hasFinishedRound = false;
-        history.savedGuesses = [];
-        localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
-    }
-
-    document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier})`;
-
-    // Rebuild active attempts from storage on page initialization
-    if (history.savedGuesses && history.savedGuesses.length > 0) {
-        history.savedGuesses.forEach(itemId => {
-            const historicalItem = completeItemPool.find(i => i.id === itemId);
-            if (historicalItem) {
-                renderGuessRowWithoutSaving(historicalItem);
-            }
-        });
-    }
-
-    // Freeze input interface parameters if user completed state profiles
-    if (history.hasFinishedRound) {
-        input.disabled = true;
-        nextRoundBtn.style.display = 'block';
-        revealBtn.style.opacity = '0.3';
-        revealBtn.disabled = true;
-        
-        const isWin = activeGuesses.some(g => g.name === secretItem.name);
-        if (isWin) {
-            const trackingWord = totalGuessesCount === 1 ? "guess" : "guesses";
-            winMessage.textContent = `🎉 Round Completed! Found ${secretItem.name} in ${totalGuessesCount} ${trackingWord}!`;
-        } else {
-            winMessage.textContent = `👁️ Revealed Answer: The target item was ${secretItem.name}.`;
-        }
-        winMessage.style.display = 'block';
-    }
-}
-
-const input = document.getElementById('itemInput');
-const suggestionsBox = document.getElementById('suggestions');
-const resultsBody = document.getElementById('resultsBody');
-const winMessage = document.getElementById('winMessage');
-
-// Tiny helper function to dynamically create item acronyms (ignoring punctuation/spaces)
-function getItemAcronym(name) {
-    return name.toLowerCase()
-        .split(/[\s'-]+/) // Splits by spaces, hyphens, or apostrophes
-        .filter(word => word.length > 0)
-        .map(word => word.charAt(0))
-        .join('');
-}
-
-input.addEventListener('input', () => {
-    const value = input.value.toLowerCase().trim();
-    suggestionsBox.innerHTML = '';
-    if (!value) return;
-
-    // Clean up the user input to ignore punctuation/spaces for the shortcut checks
-    const cleanValue = value.replace(/[\s'-]/g, '');
-
-    // HARDCODED BACKUP BOX (For slang/nicknames that don't match the first letters perfectly)
-    const shortcuts = {
-        "bork": "bladeoftheruinedking",
-        "botrk": "bladeoftheruinedking",
-        "dcap": "rabadonsdeathcap",
-        "qss": "quicksilversash",
-        "ldr": "lorddominiksregards",
-        "bv": "bansheesveil",
-        "bc": "bloodletterscurse",
-        "bg": "berserkersgreaves",
-        "sg": "seryldasgrudge",
-        "bc": "bamiscinder",
-        "sg": "steraksgage",
-        "wa": "wintersapproach",
-        "dmp": "deadmansplate",
-        "bt": "bloodthirster",
-        "roa": "rodofages"
-    };
-
-    const scoredItems = completeItemPool.map(item => {
-        const lowerName = item.name.toLowerCase();
-        const cleanName = lowerName.replace(/[\s'-]/g, '');
-        
-        let score = 0;
-
-        if (lowerName.startsWith(value)) {
-            score = 1; // Highest Priority: Name starts with search
-        } else if (lowerName.includes(` ${value}`) || lowerName.includes(`'${value}`) || lowerName.includes(`-${value}`)) {
-            score = 2; // Mid Priority: Word inside name starts with search
-        } else if (lowerName.includes(value)) {
-            score = 3; // Low Priority: Letters are found anywhere inside the name
-        } else {
-            // Low Priority Fallbacks: Requires at least 2 letters typed to prevent flooding
-            if (value.length >= 2) {
-                // Check A: Automatic Acronym generator engine
-                const autoAcronym = getItemAcronym(item.name);
-                
-                // Check B: Hardcoded manual slang box mapping
-                const matchesSlang = shortcuts[cleanValue] && cleanName === shortcuts[cleanValue];
-
-                if (autoAcronym.startsWith(value) || matchesSlang) {
-                    score = 4; // Lowest Priority: Put acronym/slang results at the bottom
-                }
-            }
-        }
-        return { item, score };
-    });
-
-    const filtered = scoredItems
-        .filter(match => match.score > 0)
-        .sort((a, b) => {
-            if (a.score !== b.score) {
-                return a.score - b.score; // Sorts 1 -> 2 -> 3 -> 4
-            }
-            return a.item.name.localeCompare(b.item.name); 
-        })
-        .map(match => match.item);
-    
-    filtered.slice(0, 8).forEach(item => { 
-        const div = document.createElement('div');
-        div.classList.add('suggestion-item');
-        
-        const img = document.createElement('img');
-        img.src = item.imgUrl;
-        
-        const span = document.createElement('span');
-        span.textContent = item.name;
-        
-        div.appendChild(img);
-        div.appendChild(span);
-        
-        div.addEventListener('click', () => {
-            submitGuess(item);
-            input.value = '';
-            suggestionsBox.innerHTML = '';
-        });
-        suggestionsBox.appendChild(div);
-    });
-});
-
-document.addEventListener('click', (e) => {
-    if (e.target !== input) suggestionsBox.innerHTML = '';
-});
-
-function createAnimatedCell(htmlContent, feedbackClass, staggerSeconds) {
-    const td = document.createElement('td');
-    
-    const container = document.createElement('div');
-    container.classList.add('flip-container');
-    
-    const front = document.createElement('div');
-    front.classList.add('card-front'); front.innerHTML = `<span>?</span>`;
-    
-    const back = document.createElement('div');
-    back.classList.add('card-back', feedbackClass);
-    if (typeof htmlContent === 'string') {
-        back.innerHTML = htmlContent;
-    } else {
-        back.appendChild(htmlContent);
-    }
-    
-    container.appendChild(front);
-    container.appendChild(back);
-    td.appendChild(container);
-    
-    setTimeout(() => {
-        container.classList.add('flip-animate');
-    }, staggerSeconds * 1000);
-
-    return td;
-}
-
-function submitGuess(guess) {
-    totalGuessesCount++;
-    const row = document.createElement('tr');
-    let delay = 0;
-    const step = 0.30; 
-
-    // 1. Item Info
-    const itemWrapper = document.createElement('div');
-    itemWrapper.classList.add('item-cell');
-    const icon = document.createElement('img');
-    icon.src = guess.imgUrl;
-    const label = document.createElement('span');
-    label.textContent = guess.name;
-    itemWrapper.appendChild(icon);
-    itemWrapper.appendChild(label);
-    
-    const nameClass = (guess.name === secretItem.name) ? 'correct' : 'wrong';
-    row.appendChild(createAnimatedCell(itemWrapper, nameClass, delay));
-    delay += step;
-
-    // 2. Rarity
-    const rarityClass = (guess.tier === secretItem.tier) ? 'correct' : 'wrong';
-    row.appendChild(createAnimatedCell(`<span>${guess.tier}</span>`, rarityClass, delay));
-    delay += step;
-
-    // 3. Class Pool
-    let classClass = 'wrong';
-    if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) {
-        classClass = 'correct';
-    } else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("N/A") && !guess.class.includes("Doran's Item")) {
-        classClass = 'partial';
-    }
-    row.appendChild(createAnimatedCell(`<span>${guess.class.join(', ')}</span>`, classClass, delay));
-    delay += step;
-
-    // 4. Gold Value
-    let goldContent = `<span>${guess.cost}</span>`;
-    const goldClass = (guess.cost === secretItem.cost) ? 'correct' : 'wrong';
-    if (guess.cost !== secretItem.cost) {
-        const arrow = guess.cost < secretItem.cost ? ' ⬆️' : ' ⬇️';
-        goldContent = `<span>${guess.cost}${arrow}</span>`;
-    }
-    row.appendChild(createAnimatedCell(goldContent, goldClass, delay));
-    delay += step;
-
-    // 5. Primary Stats
-    let statsClass = 'wrong';
-    if (JSON.stringify(guess.stats.sort()) === JSON.stringify(secretItem.stats.sort())) {
-        statsClass = 'correct';
-    } else if (guess.stats.some(s => secretItem.stats.includes(s)) && !guess.stats.includes("None")) {
-        statsClass = 'partial';
-    }
-    row.appendChild(createAnimatedCell(`<span>${guess.stats.join(', ')}</span>`, statsClass, delay));
-    delay += step;
-
-    // 6. Active?
-    const activeClass = (guess.hasActive === secretItem.hasActive) ? 'correct' : 'wrong';
-    const activeText = guess.hasActive ? "Yes" : "No";
-    row.appendChild(createAnimatedCell(`<span>${activeText}</span>`, activeClass, delay));
-    delay += step;
-
-    // 7. Common Components
-    let recipeText = "";
-    let recipeClass = 'wrong';
-    if (guess.name === secretItem.name) {
-        recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-        recipeClass = 'correct';
-    } else if (secretItem.recipe.includes(guess.name)) {
-        recipeText = guess.name;
-        recipeClass = 'partial';
-    } else {
-        const sharedComponents = guess.recipe.filter(r => secretItem.recipe.includes(r));
-        if (sharedComponents.length > 0) {
-            recipeText = sharedComponents.join(', ');
-            recipeClass = 'partial';
-        } else {
-            recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-            recipeClass = 'wrong';
-        }
-    }
-    row.appendChild(createAnimatedCell(`<span>${recipeText}</span>`, recipeClass, delay));
-    delay += step;
-
-    // 8. Item Group 
-    let groupClass = 'wrong';
-    const guessGroup = (guess.group || "").trim().toLowerCase();
-    const secretGroup = (secretItem.group || "").trim().toLowerCase();
-    const isGuessNone = (guessGroup === "" || guessGroup === "none");
-    const isSecretNone = (secretGroup === "" || secretGroup === "none");
-
-    if (guessGroup === secretGroup || (isGuessNone && isSecretNone)) {
-        groupClass = 'correct';
-    }
-    row.appendChild(createAnimatedCell(`<span>${guess.group}</span>`, groupClass, delay));
-
-    resultsBody.insertBefore(row, resultsBody.firstChild);
-    
-    // Save state adjustments to memory structures
-    activeGuesses.push(guess);
-    saveInfiniteState();
-
-    if (guess.name === secretItem.name) {
-        setTimeout(() => {
-            const trackingWord = totalGuessesCount === 1 ? "guess" : "guesses";
-            let reactionMessage = "";
-
-            if (totalGuessesCount >= 1 && totalGuessesCount <= 3) {
-                reactionMessage = `🔥 You're a Legend! You found ${secretItem.name} in just ${totalGuessesCount} ${trackingWord}!`;
-            } else if (totalGuessesCount >= 4 && totalGuessesCount <= 8) {
-                reactionMessage = `✨ Great job! You got ${secretItem.name} in ${totalGuessesCount} ${trackingWord}!`;
-            } else {
-                reactionMessage = `🎉 Well Done! You found ${secretItem.name} in ${totalGuessesCount} ${trackingWord}!`;
-            }
-
-            winMessage.textContent = reactionMessage;
-            winMessage.style.display = 'block';
-            input.disabled = true;
-            nextRoundBtn.style.display = 'block';
-
-            // --- PROCESS COMPREHENSIVE STREAK LOGIC ---
-            const history = getInfiniteHistory();
-            if (!history.hasFinishedRound) {
-                history.hasFinishedRound = true;
-                
-                // Only award the streak run if it was won in 6 guesses or less!
-                if (totalGuessesCount <= 6) {
-                    history.currentStreak++;
-                    if (history.currentStreak > history.maxStreak) {
-                        history.maxStreak = history.currentStreak;
-                    }
-                } else {
-                    // Won, but took more than 6 guesses -> breaks streak!
-                    history.currentStreak = 0; 
-                    alert("You found it! But because it took more than 6 guesses, your active win streak has reset.");
-                }
-
-                localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
-                syncInfiniteDashboardVisuals();
-            }
-        }, (delay + 0.6) * 1000);
-    }
-}
-// Re-renders guess logs instantly upon browser refreshes without trigger animations
-function renderGuessRowWithoutSaving(guess) {
-    activeGuesses.push(guess);
-    totalGuessesCount++;
-    const row = document.createElement('tr');
-
-    const itemWrapper = document.createElement('div');
-    itemWrapper.classList.add('item-cell');
-    const icon = document.createElement('img');
-    icon.src = guess.imgUrl;
-    const label = document.createElement('span');
-    label.textContent = guess.name;
-    itemWrapper.appendChild(icon);
-    itemWrapper.appendChild(label);
-    row.appendChild(createAnimatedCell(itemWrapper, (guess.name === secretItem.name) ? 'correct' : 'wrong', 0));
-
-    row.appendChild(createAnimatedCell(`<span>${guess.tier}</span>`, (guess.tier === secretItem.tier) ? 'correct' : 'wrong', 0));
-
-    let classClass = 'wrong';
-    if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort())) classClass = 'correct';
-    else if (guess.class.some(c => secretItem.class.includes(c)) && !guess.class.includes("N/A") && !guess.class.includes("Doran's Item")) classClass = 'partial';
-    row.appendChild(createAnimatedCell(`<span>${guess.class.join(', ')}</span>`, classClass, 0));
-
-    let goldContent = `<span>${guess.cost}</span>`;
-    if (guess.cost !== secretItem.cost) {
-        goldContent = `<span>${guess.cost}${guess.cost < secretItem.cost ? ' ⬆️' : ' ⬇️'}</span>`;
-    }
-    row.appendChild(createAnimatedCell(goldContent, (guess.cost === secretItem.cost) ? 'correct' : 'wrong', 0));
-
-    let statsClass = 'wrong';
-    if (JSON.stringify(guess.stats.sort()) === JSON.stringify(secretItem.stats.sort())) statsClass = 'correct';
-    else if (guess.stats.some(s => secretItem.stats.includes(s)) && !guess.stats.includes("None")) statsClass = 'partial';
-    row.appendChild(createAnimatedCell(`<span>${guess.stats.join(', ')}</span>`, statsClass, 0));
-
-    row.appendChild(createAnimatedCell(`<span>${guess.hasActive ? "Yes" : "No"}</span>`, (guess.hasActive === secretItem.hasActive) ? 'correct' : 'wrong', 0));
-
-    let recipeText = "";
-    let recipeClass = 'wrong';
-    if (guess.name === secretItem.name) {
-        recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-        recipeClass = 'correct';
-    } else if (secretItem.recipe.includes(guess.name)) {
-        recipeText = guess.name;
-        recipeClass = 'partial';
-    } else {
-        const sharedComponents = guess.recipe.filter(r => secretItem.recipe.includes(r));
-        if (sharedComponents.length > 0) {
-            recipeText = sharedComponents.join(', ');
-            recipeClass = 'partial';
-        } else {
-            recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-            recipeClass = 'wrong';
-        }
-    }
-    row.appendChild(createAnimatedCell(`<span>${recipeText}</span>`, recipeClass, 0));
-
-    let groupClass = 'wrong';
-    if ((guess.group || "").trim().toLowerCase() === (secretItem.group || "").trim().toLowerCase() || ((guess.group || "").trim().toLowerCase() === "none" && (secretItem.group || "").trim().toLowerCase() === "none")) groupClass = 'correct';
-    row.appendChild(createAnimatedCell(`<span>${guess.group}</span>`, groupClass, 0));
-
-    resultsBody.insertBefore(row, resultsBody.firstChild);
-}
-
-// --- BOARD ACTION SYSTEM HANDLERS ---
-
-// Forces explicit board clear, wipes streaks, and updates item parameters
-// 1. DEFINE ALL DOM ELEMENTS FIRST
-const resetBtn = document.getElementById('resetBtn');
-
-const toggleDevBtn = document.getElementById('toggleDevBtn');
-const devPanel = document.getElementById('devPanel');
-const settingsModal = document.getElementById('settingsModal');
-const openSettingsBtn = document.getElementById('openSettingsBtn');
-const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-const colorblindToggle = document.getElementById('colorblindToggle');
-
-// 2. ATTACH INFINITE MODE EVENT LISTENERS
-resetBtn.addEventListener('click', () => {
-    const confirmReset = confirm("Are you sure you want to reset? This clears the board and resets your current win streaks to zero.");
-    if (!confirmReset) return;
-
-    const history = getInfiniteHistory();
-    history.currentStreak = 0;
-    history.currentSecretId = ""; // Clear out the item ID reference entirely
-    history.hasFinishedRound = false;
-    history.savedGuesses = [];
-    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
-
-    secretItem = null; // Forces game to select a new item code block
-    initInfiniteRound();
-});
-
-revealBtn.addEventListener('click', () => {
-    const history = getInfiniteHistory();
-    if (history.hasFinishedRound) return;
-
-    const confirmReveal = confirm("Reveal answer? This counts as a loss and drops your active streaks back down to zero.");
-    if (!confirmReveal) return;
-
-    history.currentStreak = 0;
-    history.hasFinishedRound = true;
-    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
-    
-    syncInfiniteDashboardVisuals();
-
-    winMessage.textContent = `👁️ Revealed Answer: The target item was ${secretItem.name}.`;
-    winMessage.style.display = 'block';
-    input.disabled = true;
-    nextRoundBtn.style.display = 'block';
-});
-
-nextRoundBtn.addEventListener('click', () => {
-    const history = getInfiniteHistory();
-    history.currentSecretId = ""; // Wipes old item out of storage
-    history.hasFinishedRound = false;
-    history.savedGuesses = [];
-    localStorage.setItem('mantdleInfiniteHistory', JSON.stringify(history));
-
-    secretItem = null; // Clear working reference
-    initInfiniteRound();
-});
-
-// 3. INTERFACE LISTENERS (DEV MODAL, SETTINGS)
-toggleDevBtn.addEventListener('click', () => {
-    if (devPanel.style.display === 'flex') {
-        devPanel.style.display = 'none';
-        toggleDevBtn.style.borderColor = '#3c3c41';
-        toggleDevBtn.style.color = '#a0a0a0';
-    } else {
-        const challenge = prompt("Enter Password to unlock developer diagnostics panel:");
-        if (challenge === "teemo123") {
-            devPanel.style.display = 'flex';
-            toggleDevBtn.style.borderColor = '#c8aa6e';
-            toggleDevBtn.style.color = '#c8aa6e';
-        } else if (challenge !== null) {
-            alert("Access Denied.");
-        }
-    }
-});
-
-openSettingsBtn.addEventListener('click', () => {
-    settingsModal.style.display = 'flex';
-});
-
-closeSettingsBtn.addEventListener('click', () => {
-    settingsModal.style.display = 'none';
-});
-
-colorblindToggle.addEventListener('change', () => {
-    if (colorblindToggle.checked) {
-        document.body.classList.add('colorblind-mode');
-        localStorage.setItem('colorblindMode', 'true');
-    } else {
-        document.body.classList.remove('colorblind-mode');
-        localStorage.setItem('colorblindMode', 'false');
-    }
-});
-
-if (localStorage.getItem('colorblindMode') === 'true') {
-    colorblindToggle.checked = true;
-    document.body.classList.add('colorblind-mode');
-}
-
-window.addEventListener('click', (e) => {
-    if (e.target === settingsModal) {
-        settingsModal.style.display = 'none';
-    }
-});
-// ==========================================
-//  EDIT PATCH NOTES HERE!
-// ==========================================
-// Major.Minor.Patch
-// Major -> Massive change like new thing completely or new game mode or something 
-// Minor -> Noticeable improvement like new stat filter or rearranged table columns or something 
-// Patch -> Small bug fixes or tiny corrections that do not adda ny new content and stuff
-const MY_PATCH_NOTES = [
-        {
-        version: "Future Plans/Ideas",
-        changes: [
-            "Make this layout and stuff look better", 
-        ]
-    },
-    {
-        version: "Infinite Mode v1.0.0",
-        changes: [
-            "Added to gamemode tab"
-        ]
-    },
-    
-    // To add a new version in the future, just copy/paste block format:
-    // ,{
-    //     version: "v1.2.0",
-    //     changes: ["Change 1", "Change 2"]
-    // }
-];
-
-// ==========================================
-// MODAL ENGINE
-// ==========================================
-const patchNotesModal = document.getElementById('patchNotesModal');
-const patchNotesBtn = document.getElementById('patchNotesBtn');
-const closeModalBtn = document.getElementById('closeModalBtn');
-const patchNotesContainer = document.getElementById('patchNotesContainer');
-
-// Dynamically generate the HTML content from your list above
-function renderPatchNotes() {
-    patchNotesContainer.innerHTML = ''; // Clear old static entries
-    
-    MY_PATCH_NOTES.forEach(update => {
-        const titleDiv = document.createElement('div');
-        titleDiv.classList.add('patch-version');
-        titleDiv.textContent = update.version;
-        
-        const listUl = document.createElement('ul');
-        listUl.classList.add('patch-list');
-        
-        update.changes.forEach(changeText => {
-            const itemLi = document.createElement('li');
-            itemLi.innerHTML = changeText; // .innerHTML allows using tags like <b> if wanted
-            listUl.appendChild(itemLi);
-        });
-        
-        patchNotesContainer.appendChild(titleDiv);
-        patchNotesContainer.appendChild(listUl);
-    });
-}
-
-// Event Listeners
-patchNotesBtn.addEventListener('click', () => {
-    renderPatchNotes(); 
-    patchNotesModal.style.display = 'flex';
-});
-
-closeModalBtn.addEventListener('click', () => {
-    patchNotesModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-    if (e.target === patchNotesModal) {
-        patchNotesModal.style.display = 'none';
-    }
-});
-// --- DRAGGABLE WINDOW ENGINE ---
-const colorLegend = document.getElementById('colorLegend');
-const legendToggle = document.getElementById('legendToggle');
-const closeLegendBtn = document.getElementById('closeLegendBtn');
-
-// 1. Drag and Drop Mouse Handlers
-makeElementDraggable(colorLegend);
-
-function makeElementDraggable(elmnt) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    const header = document.getElementById(elmnt.id + "Header");
-    
-    if (header) {
-        header.onmousedown = dragMouseDown;
-    } else {
-        elmnt.onmousedown = dragMouseDown;
-    }
-
-    function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // Get mouse cursor position at startup
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        // Call a function whenever the cursor moves
-        document.onmousemove = elementDrag;
-    }
-
-    function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        // Calculate new cursor position
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        
-        // Set element's new position, checking borders
-        let topPos = elmnt.offsetTop - pos2;
-        let leftPos = elmnt.offsetLeft - pos1;
-        
-        // Simple viewport boundaries constraint
-        if (topPos < 0) topPos = 0;
-        if (leftPos < 0) leftPos = 0;
-        if (topPos > window.innerHeight - elmnt.offsetHeight) topPos = window.innerHeight - elmnt.offsetHeight;
-        if (leftPos > window.innerWidth - elmnt.offsetWidth) leftPos = window.innerWidth - elmnt.offsetWidth;
-
-        elmnt.style.top = topPos + "px";
-        elmnt.style.left = leftPos + "px";
-        elmnt.style.bottom = "auto";
-        elmnt.style.right = "auto";
-    }
-
-    function closeDragElement() {
-        // Stop moving when mouse button is released
-        document.onmouseup = null;
-        document.onmousemove = null;
-    }
-}
-
-// 2. Settings Toggle Controls
-legendToggle.addEventListener('change', () => {
-    if (legendToggle.checked) {
-        colorLegend.style.display = 'block';
-        localStorage.setItem('showColorLegend', 'true');
-    } else {
-        colorLegend.style.display = 'none';
-        localStorage.setItem('showColorLegend', 'false');
-    }
-});
-
-// Little corner 'x' button inside the widget window itself
-closeLegendBtn.addEventListener('click', () => {
-    colorLegend.style.display = 'none';
-    legendToggle.checked = false;
-    localStorage.setItem('showColorLegend', 'false');
-});
-
-// Load user selection state from localStorage on layout boots
-if (localStorage.getItem('showColorLegend') === 'false') {
-    legendToggle.checked = false;
-    colorLegend.style.display = 'none';
-} else {
-    legendToggle.checked = true;
-    colorLegend.style.display = 'block';
-}
-initializeGameEngine();
-
-</script>
+    <!-- Scripts -->
+    <script src="scripts/shared.js"></script>
+    <script src="scripts/patch-notes.js"></script>
+    <script src="scripts/infinite-mode.js"></script>
 </body>
 </html>
