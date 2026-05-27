@@ -16,7 +16,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v2.0.0 (Release)",
+        version: "v1.0.0 (Release)",
         changes: [
             "Fixed bug where some browsers do not get same daily item",
             "Added Share button that copies result to clipboard for winning",
@@ -25,7 +25,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.3.0 (Beta)",
+        version: "v0.3.0 (Beta)",
         changes: [
             "Added Daily Mode where you can visit each day and try to guess the daily item and increase your daily streak",
             "Added Infinite Mode where you can try to get the highest win streak possible. Win streaks only increase if you get the item in 6 or less guesses (subject to change).",
@@ -36,7 +36,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.2.2 (Beta)",
+        version: "v0.2.2 (Beta)",
         changes: [
             "Fixed Luden's echo not showing up as a mage item",
             "BT acronym added for bloodthirster",
@@ -44,7 +44,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.2.1 (Beta)",
+        version: "v0.2.1 (Beta)",
         changes: [
             "Fixed filter incorrectly removing Bloodletter's Curse and Hollow Radiance from pool",
             "Updated search suggestions to include common acronyms like LDR or BORK to be able to search with",
@@ -53,7 +53,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.2.0 (Beta)",
+        version: "v0.2.0 (Beta)",
         changes: [
             "Fixed bug where guessing an item with Item Group 'None' would incorrectly display as red when Item Group is actually 'None'",
             "Added settings menu with colorblind support",
@@ -62,7 +62,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.1.1 (Beta)",
+        version: "v0.1.1 (Beta)",
         changes: [
             "Updated Item Group description to be less confusing",
             "Changed class pool when item has no class from 'Component' to 'N/A'",
@@ -70,7 +70,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.1.0 (Beta)",
+        version: "v0.1.0 (Beta)",
         changes: [
             "Moved the 'Item Group' column to the far-right side of the results row.",
             "Added descriptive tooltips when hovering over table column headers.",
@@ -80,7 +80,7 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.0.0 (Alpha Release)",
+        version: "v0.0.1 (Alpha Release)",
         changes: [
             "Launched Null-Magic Mantdle core guess engine using live server items database.",
             "Integrated prioritized search auto-suggestions and standard grid color feedback.",
