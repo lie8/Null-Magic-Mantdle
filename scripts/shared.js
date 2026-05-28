@@ -8,7 +8,7 @@
 // ============================================
 
 const CONFIG = {
-    PATCH_VERSION: "16.10.1",
+    PATCH_VERSION: "16.11.1",
     API_URL: null, // Set in init
     IMG_BASE: null, // Set in init
     DEV_PASSWORD: "teemo123"

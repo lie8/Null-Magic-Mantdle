@@ -14,11 +14,19 @@ const PATCH_NOTES = [
             "Gamemode for runes?"
         ]
     },
+    {
+        version: "v1.1.2",
+        changes: [
+            "Updated to league patch 16.11.1 (updated imperial mandate recipe)",
+        ]
+    },
                 {
         version: "v1.1.1",
         changes: [
             "Fixed daily player amount not updating",
-            "Cleaned up infinite mode"
+            "Cleaned up infinite mode",
+            "Removed alpha mode cus it was bugged",
+            "Reset item pool"
         ]
     },
         {

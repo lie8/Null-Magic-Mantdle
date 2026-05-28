@@ -12,7 +12,7 @@ let gameEnded = false;
 let userAttemptsMatrix = [];
 
 // Game start date for day number calculation
-const GAME_START_DATE = new Date('2026-05-27T00:00:00-05:00'); // May 27, 2026 EST
+const GAME_START_DATE = new Date('2026-05-28T00:00:00-05:00'); // May 27, 2026 EST
 
 // Manual queue for specific daily items
 const CUSTOM_DAILY_QUEUE = {
@@ -620,7 +620,7 @@ function generateShareText() {
         });
     }
 
-    const gameUrl = "https://lie8.github.io/Null-Magic-Mantdle/";
+    const gameUrl = "https://null-magic-mantdle.lie8.workers.dev/";
     return `I found the NullMagicMantdle item #${dayNumber} in daily mode in ${currentGuessesCount} ${currentGuessesCount === 1 ? 'try' : 'tries'}!\n\n${blockGrid.trim()}\n\nPlay here: ${gameUrl}`;
 }
 
