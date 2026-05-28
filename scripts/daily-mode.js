@@ -529,26 +529,51 @@ function showShareButton() {
     shareBtn.style.display = 'inline-flex';
 }
 
-// Track user counter for daily challenge
-function getDailyUserCount() {
+
+// ============================================
+// FIREBASE GLOBAL COUNTER
+// ============================================
+
+async function getDailyUserCount() {
     const dayId = getCurrentESTDate();
-    const key = `daily_users_${dayId}`;
-    const count = localStorage.getItem(key);
-    return count ? parseInt(count) : 0;
+    try {
+        const { doc, getDoc } = window.firebaseImports;
+        const docRef = doc(window.db, 'daily_users', dayId);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            return docSnap.data().count;
+        }
+        return 0;
+    } catch (error) {
+        console.log('Firebase error:', error);
+        // Fallback to localStorage if Firebase fails
+        return parseInt(localStorage.getItem(`daily_users_${dayId}`) || 0);
+    }
 }
 
-function incrementDailyUserCount() {
+async function incrementDailyUserCount() {
     const dayId = getCurrentESTDate();
-    const key = `daily_users_${dayId}`;
-    const currentCount = getDailyUserCount();
-    localStorage.setItem(key, currentCount + 1);
-    updateUserCountDisplay();
+    try {
+        const { doc, setDoc, increment } = window.firebaseImports;
+        const docRef = doc(window.db, 'daily_users', dayId);
+        
+        await setDoc(docRef, { count: increment(1) }, { merge: true });
+        await updateUserCountDisplay();
+    } catch (error) {
+        console.log('Firebase error:', error);
+        // Fallback
+        const current = parseInt(localStorage.getItem(`daily_users_${dayId}`) || 0);
+        localStorage.setItem(`daily_users_${dayId}`, current + 1);
+        await updateUserCountDisplay();
+    }
 }
 
-function updateUserCountDisplay() {
+async function updateUserCountDisplay() {
     const countElement = document.getElementById('userCountNumber');
     if (countElement) {
-        countElement.textContent = getDailyUserCount();
+        const count = await getDailyUserCount();
+        countElement.textContent = count;
     }
 }
 // ============================================

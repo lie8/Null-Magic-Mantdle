@@ -8,11 +8,17 @@ const PATCH_NOTES = [
         version: "Future Plans/Ideas",
         changes: [
             "Better domain",
-            "Player Counts?",
             "Better Background and Graphics",,
             "Better Mobile Support",
             "Gamemode with arena/aram items/augments?",
             "Gamemode for runes?"
+        ]
+    },
+                {
+        version: "v1.1.1",
+        changes: [
+            "Fixed daily player amount not updating",
+            "Cleaned up infinite mode"
         ]
     },
         {
