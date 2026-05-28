@@ -25,54 +25,28 @@ const CUSTOM_DAILY_QUEUE = {
 // ============================================
 
 function seededRandom(seed) {
-    const x = Math.sin(seed++) * 10000;
+    // Use multiply-shift-mix for consistent hashing across all browsers
+    const x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
 }
 
-function seededShuffle(array, seed) {
-    const shuffled = [...array];
-    let m = shuffled.length, t, i;
-    while (m) {
-        i = Math.floor(seededRandom(seed++) * m--);
-        t = shuffled[m];
-        shuffled[m] = shuffled[i];
-        shuffled[i] = t;
-    }
-    return shuffled;
-}
-
-// ============================================
-// DATE & TIMEZONE UTILITIES
-// ============================================
-
-/**
- * Get current EST date string in YYYY-MM-DD format
- * This ensures all users get the same daily item regardless of their timezone
- */
-function getCurrentESTDate() {
-    // Get current time
-    const now = new Date();
+function getConsistentDailyItemId() {
+    const dayId = getCurrentESTDate();
+    const [year, month, day] = dayId.split('-').map(Number);
     
-    // Convert to EST (UTC-5)
-    // Note: We use UTC-5 regardless of DST to keep the game consistent year-round
-    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-    const estOffset = -5 * 60 * 60000; // EST is UTC-5
-    const estTime = new Date(utcTime + estOffset);
+    // Single consistent seed from date
+    const baseSeed = year * 10000 + month * 100 + day;
     
-    const year = estTime.getUTCFullYear();
-    const month = String(estTime.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(estTime.getUTCDate()).padStart(2, '0');
+    // Get all valid items
+    const validItems = completeItemPool.filter(item => 
+        !CUSTOM_EXCLUDED_ITEMS.has(item.name)
+    );
     
-    return `${year}-${month}-${day}`;
-}
-
-/**
- * Calculate day number since game started
- */
-function getDayNumber(dateString) {
-    const currentDate = new Date(dateString + 'T00:00:00-05:00');
-    const daysDiff = Math.floor((currentDate - GAME_START_DATE) / (1000 * 60 * 60 * 24));
-    return daysDiff + 1; // Start from day 1
+    // Generate consistent random index
+    const randomValue = seededRandom(baseSeed);
+    const index = Math.floor(randomValue * validItems.length);
+    
+    return validItems[index].id;
 }
 
 // ============================================
@@ -80,12 +54,8 @@ function getDayNumber(dateString) {
 // ============================================
 
 function initDailySecretItem() {
-    // Get current EST date consistently
     const dayId = getCurrentESTDate();
     
-    // Parse date components for seeding
-    const [year, month, day] = dayId.split('-').map(Number);
-
     // Check custom queue first
     if (CUSTOM_DAILY_QUEUE[dayId]) {
         const queuedItemId = CUSTOM_DAILY_QUEUE[dayId];
@@ -99,87 +69,32 @@ function initDailySecretItem() {
         }
     }
 
-    // Seeded selection
-    const legendaryItems = completeItemPool.filter(item => item.tier === "Legendary");
-    const epicItems = completeItemPool.filter(item => item.tier === "Epic");
-    const commonItems = completeItemPool.filter(item => item.tier === "Common");
-    const starterItems = completeItemPool.filter(item => item.tier === "Starter");
+    // Get item using simple, deterministic method
+    const itemId = getConsistentDailyItemId();
+    secretItem = completeItemPool.find(item => item.id === itemId);
 
+    // Handle streak logic
     let dailyHistory = getDailyHistory();
-    let baseSeed = year * 10000 + parseInt(month) * 100 + parseInt(day);
-
-    // Initialize shuffled orders
-    if (!dailyHistory.legendaryOrder.length) {
-        dailyHistory.legendaryOrder = seededShuffle(legendaryItems.map(i => i.id), baseSeed);
-    }
-    if (!dailyHistory.epicOrder.length) {
-        dailyHistory.epicOrder = seededShuffle(epicItems.map(i => i.id), baseSeed + 1);
-    }
-    if (!dailyHistory.commonOrder.length) {
-        dailyHistory.commonOrder = seededShuffle(commonItems.map(i => i.id), baseSeed + 2);
-    }
-    if (!dailyHistory.starterOrder.length) {
-        dailyHistory.starterOrder = seededShuffle(starterItems.map(i => i.id), baseSeed + 3);
-    }
-
+    
     // New day check
     if (dailyHistory.lastPlayedDay !== dayId) {
         if (dailyHistory.lastPlayedDay !== "") {
-            const lastDate = new Date(dailyHistory.lastPlayedDay.replace(/-/g, '/'));
-            const currentDate = new Date(dayId.replace(/-/g, '/'));
+            const lastDate = new Date(dailyHistory.lastPlayedDay + 'T00:00:00-05:00');
+            const currentDate = new Date(dayId + 'T00:00:00-05:00');
             const daysBetween = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
 
+            // Break streak if missed a day or didn't win
             if (daysBetween > 1 || !dailyHistory.hasWonToday) {
                 dailyHistory.currentStreak = 0;
             }
         }
 
-        if (dailyHistory.lastPlayedDay !== "") {
-            dailyHistory.legendaryIdx++;
-            dailyHistory.epicIdx++;
-            dailyHistory.commonIdx++;
-            dailyHistory.starterIdx++;
-        }
-
-        // Wrap indices
-        if (dailyHistory.legendaryIdx >= dailyHistory.legendaryOrder.length) {
-            dailyHistory.legendaryIdx = 0;
-            dailyHistory.legendaryOrder = seededShuffle(legendaryItems.map(i => i.id), baseSeed + 9);
-        }
-        if (dailyHistory.epicIdx >= dailyHistory.epicOrder.length) {
-            dailyHistory.epicIdx = 0;
-            dailyHistory.epicOrder = seededShuffle(epicItems.map(i => i.id), baseSeed + 10);
-        }
-        if (dailyHistory.commonIdx >= dailyHistory.commonOrder.length) {
-            dailyHistory.commonIdx = 0;
-            dailyHistory.commonOrder = seededShuffle(commonItems.map(i => i.id), baseSeed + 11);
-        }
-        if (dailyHistory.starterIdx >= dailyHistory.starterOrder.length) {
-            dailyHistory.starterIdx = 0;
-            dailyHistory.starterOrder = seededShuffle(starterItems.map(i => i.id), baseSeed + 12);
-        }
-
+        // Reset for new day
         dailyHistory.lastPlayedDay = dayId;
         dailyHistory.hasWonToday = false;
         dailyHistory.savedGuesses = [];
         saveDailyHistory(dailyHistory);
     }
-
-    // Select item based on tier roll
-    const tierRoll = seededRandom(baseSeed + 50);
-    let chosenItemId;
-
-    if (tierRoll < 0.85) {
-        chosenItemId = dailyHistory.legendaryOrder[dailyHistory.legendaryIdx];
-    } else if (tierRoll < 0.95) {
-        chosenItemId = dailyHistory.epicOrder[dailyHistory.epicIdx];
-    } else {
-        const combineGroup = [...dailyHistory.commonOrder, ...dailyHistory.starterOrder];
-        const combinedIdx = dailyHistory.commonIdx % combineGroup.length;
-        chosenItemId = combineGroup[combinedIdx];
-    }
-
-    secretItem = completeItemPool.find(item => item.id === chosenItemId) || completeItemPool[0];
 
     document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier})`;
     
@@ -450,7 +365,7 @@ function updateDailyStats(guesses) {
     won++;
     totalGuesses += guesses;
     if (guesses === 1) oneGuessWins++;
-    incrementDailyUserCount();
+    
     
     // Save stats
     localStorage.setItem('stats_daily_played', played);
@@ -558,7 +473,7 @@ function showShareButton() {
         shareBtn = document.createElement('button');
         shareBtn.id = 'dailyShareBtn';
         shareBtn.className = 'share-action-btn';
-        shareBtn.innerHTML = '📋 Copy Result';
+        shareBtn.innerHTML = '🔗 Share Result';
         
         shareBtn.addEventListener('click', async () => {
             const shareText = generateShareText();

@@ -15,6 +15,13 @@ const PATCH_NOTES = [
             "Gamemode for runes?"
         ]
     },
+        {
+        version: "v1.1.0",
+        changes: [
+            "Added daily player amount",
+            "Fixed item being inconsistent for real"
+        ]
+    },
     {
         version: "v1.0.0 (Release)",
         changes: [
@@ -22,6 +29,7 @@ const PATCH_NOTES = [
             "Added Share button that copies result to clipboard for winning",
             "Added Daily Mode stats tracking that tracks games played, won, average guesses, and one-guess wins",
             "Complete code refactor and reduced code duplication by 70% (3,500+ lines)",
+            "Added Feedback Form"
         ]
     },
     {
