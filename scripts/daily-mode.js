@@ -395,6 +395,7 @@ function updateDailyStats(guesses) {
     won++;
     totalGuesses += guesses;
     if (guesses === 1) oneGuessWins++;
+    incrementDailyUserCount();
     
     
     // Save stats
