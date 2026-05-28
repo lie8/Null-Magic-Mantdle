@@ -12,7 +12,7 @@ let gameEnded = false;
 let userAttemptsMatrix = [];
 
 // Game start date for day number calculation
-const GAME_START_DATE = new Date('2026-05-01T00:00:00-05:00'); // May 1, 2026 EST
+const GAME_START_DATE = new Date('2026-05-27T00:00:00-05:00'); // May 27, 2026 EST
 
 // Manual queue for specific daily items
 const CUSTOM_DAILY_QUEUE = {
@@ -26,23 +26,149 @@ function seededRandom(seed) {
     return x - Math.floor(x);
 }
 
-function getConsistentDailyItemId() {
-    const dayId = getCurrentESTDate();
-    const [year, month, day] = dayId.split('-').map(Number);
+// ============================================
+// ITEM POOL CYCLING WITH TIER BALANCE
+// ============================================
+
+function getShuffledTierPool(tierName, cycleNumber) {
+    // Get items for this tier
+    const tierItems = completeItemPool.filter(item => 
+        item.tier === tierName && !CUSTOM_EXCLUDED_ITEMS.has(item.name)
+    );
     
-    // Single consistent seed from date
+    // Create a unique seed for this tier and cycle
+    // Different cycle number = different shuffle order
+    const tierSeed = 20260501 + (tierName === "Legendary" ? 1000 : tierName === "Epic" ? 2000 : 3000) + cycleNumber;
+    
+    // Shuffle this tier's items
+    const shuffled = [...tierItems];
+    let seed = tierSeed;
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom(seed++) * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    return shuffled;
+}
+
+function getDaysSinceGameStart() {
+    const dayId = getCurrentESTDate();
+    const currentDate = new Date(dayId + 'T00:00:00-05:00');
+    const daysDiff = Math.floor((currentDate - GAME_START_DATE) / (1000 * 60 * 60 * 24));
+    return daysDiff; // 0 on May 1, 1 on May 2, etc.
+}
+
+function getConsistentDailyItemId() {
+    const daysSinceStart = getDaysSinceGameStart();
+    
+    // Create a seed from the day to pick tier consistently
+    const [year, month, day] = getCurrentESTDate().split('-').map(Number);
     const baseSeed = year * 10000 + month * 100 + day;
     
-    // Get all valid items
-    const validItems = completeItemPool.filter(item => 
+    // Determine tier for this day (85% Legendary, 10% Epic, 5% Common/Starter)
+    const tierRoll = seededRandom(baseSeed + 50);
+    let selectedTier, tietItemCount;
+    
+    if (tierRoll < 0.85) {
+        selectedTier = "Legendary";
+    } else if (tierRoll < 0.95) {
+        selectedTier = "Epic";
+    } else {
+        selectedTier = "Common"; // Includes Common + Starter combined
+    }
+    
+    // Get the shuffled pool for this tier and cycle
+    // We need to track which "cycle" we're in for each tier
+    const legendaryPool = getShuffledTierPool("Legendary", 0);
+    const epicPool = getShuffledTierPool("Epic", 0);
+    const commonPool = completeItemPool.filter(item => 
+        (item.tier === "Common" || item.tier === "Starter") && 
+        !CUSTOM_EXCLUDED_ITEMS.has(item.name)
+    );
+    const commonPoolShuffled = getShuffledTierPool("Common", 0);
+    
+    // Calculate indices for each tier based on days passed
+    const legendaryIndex = daysSinceStart % legendaryPool.length;
+    const epicIndex = daysSinceStart % epicPool.length;
+    const commonIndex = daysSinceStart % commonPoolShuffled.length;
+    
+    // Select based on determined tier
+    if (selectedTier === "Legendary") {
+        return legendaryPool[legendaryIndex].id;
+    } else if (selectedTier === "Epic") {
+        return epicPool[epicIndex].id;
+    } else {
+        return commonPoolShuffled[commonIndex].id;
+    }
+}
+
+function getPoolProgress() {
+    const daysSinceStart = getDaysSinceGameStart();
+    
+    const legendaryPool = getShuffledTierPool("Legendary", 0);
+    const epicPool = getShuffledTierPool("Epic", 0);
+    const commonPool = completeItemPool.filter(item => 
+        (item.tier === "Common" || item.tier === "Starter") && 
         !CUSTOM_EXCLUDED_ITEMS.has(item.name)
     );
     
-    // Generate consistent random index
-    const randomValue = seededRandom(baseSeed);
-    const index = Math.floor(randomValue * validItems.length);
+    return {
+        legendaryIndex: daysSinceStart % legendaryPool.length,
+        legendaryTotal: legendaryPool.length,
+        epicIndex: daysSinceStart % epicPool.length,
+        epicTotal: epicPool.length,
+        commonIndex: daysSinceStart % commonPool.length,
+        commonTotal: commonPool.length,
+        daysSinceStart: daysSinceStart
+    };
+}
+
+function displayItemPoolProgress() {
+    const progress = getPoolProgress();
+    const devPanel = document.getElementById('devPanel');
     
-    return validItems[index].id;
+    if (!devPanel) return;
+    
+    let poolSection = document.getElementById('poolProgressSection');
+    if (!poolSection) {
+        poolSection = document.createElement('div');
+        poolSection.id = 'poolProgressSection';
+        poolSection.style.marginTop = '15px';
+        poolSection.style.paddingTop = '15px';
+        poolSection.style.borderTop = '1px solid #3c3c41';
+        devPanel.appendChild(poolSection);
+    }
+    
+    const legendaryPercent = Math.round((progress.legendaryIndex / progress.legendaryTotal) * 100);
+    const epicPercent = Math.round((progress.epicIndex / progress.epicTotal) * 100);
+    const commonPercent = Math.round((progress.commonIndex / progress.commonTotal) * 100);
+    
+    poolSection.innerHTML = `
+        <div style="color: #c8aa6e; font-weight: bold; margin-bottom: 12px;">
+            Daily Item Pool Cycling (Day ${progress.daysSinceStart + 1})
+        </div>
+        
+        <div style="color: #a0a0a0; font-size: 11px; margin-bottom: 4px;">
+            🟨 Legendary: ${progress.legendaryIndex}/${progress.legendaryTotal} (${legendaryPercent}%)
+        </div>
+        <div style="width: 100%; height: 12px; background: #1c1c22; border: 1px solid #3c3c41; border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+            <div style="width: ${legendaryPercent}%; height: 100%; background: #c8aa6e; transition: width 0.3s;"></div>
+        </div>
+        
+        <div style="color: #a0a0a0; font-size: 11px; margin-bottom: 4px;">
+            🟦 Epic: ${progress.epicIndex}/${progress.epicTotal} (${epicPercent}%)
+        </div>
+        <div style="width: 100%; height: 12px; background: #1c1c22; border: 1px solid #3c3c41; border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+            <div style="width: ${epicPercent}%; height: 100%; background: #b58900; transition: width 0.3s;"></div>
+        </div>
+        
+        <div style="color: #a0a0a0; font-size: 11px; margin-bottom: 4px;">
+            🟩 Common/Starter: ${progress.commonIndex}/${progress.commonTotal} (${commonPercent}%)
+        </div>
+        <div style="width: 100%; height: 12px; background: #1c1c22; border: 1px solid #3c3c41; border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+            <div style="width: ${commonPercent}%; height: 100%; background: #1c773e; transition: width 0.3s;"></div>
+        </div>
+    `;
 }
 
 // ============================================
@@ -99,7 +225,7 @@ function initDailySecretItem() {
         }
     }
 
-    // Get item using simple, deterministic method
+    // Get item using cycling method (no repeats)
     const itemId = getConsistentDailyItemId();
     secretItem = completeItemPool.find(item => item.id === itemId);
 
@@ -128,6 +254,8 @@ function initDailySecretItem() {
 
     document.getElementById("devTarget").textContent = `${secretItem.name} (${secretItem.tier})`;
     
+    // Display pool progress in dev panel
+    displayItemPoolProgress();
     updateStreakDisplay();
     restoreDailyProgress();
     startMidnightTimer();
