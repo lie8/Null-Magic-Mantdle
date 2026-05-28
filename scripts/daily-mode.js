@@ -450,6 +450,7 @@ function updateDailyStats(guesses) {
     won++;
     totalGuesses += guesses;
     if (guesses === 1) oneGuessWins++;
+    incrementDailyUserCount();
     
     // Save stats
     localStorage.setItem('stats_daily_played', played);
@@ -582,6 +583,28 @@ function showShareButton() {
     shareBtn.style.display = 'inline-flex';
 }
 
+// Track user counter for daily challenge
+function getDailyUserCount() {
+    const dayId = getCurrentESTDate();
+    const key = `daily_users_${dayId}`;
+    const count = localStorage.getItem(key);
+    return count ? parseInt(count) : 0;
+}
+
+function incrementDailyUserCount() {
+    const dayId = getCurrentESTDate();
+    const key = `daily_users_${dayId}`;
+    const currentCount = getDailyUserCount();
+    localStorage.setItem(key, currentCount + 1);
+    updateUserCountDisplay();
+}
+
+function updateUserCountDisplay() {
+    const countElement = document.getElementById('userCountNumber');
+    if (countElement) {
+        countElement.textContent = getDailyUserCount();
+    }
+}
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -594,7 +617,7 @@ async function initDailyMode() {
     initSettings();
     initModals();
     initDevPanel();
-
+    updateUserCountDisplay();
     const input = document.getElementById('itemInput');
     const suggestions = document.getElementById('suggestions');
 
