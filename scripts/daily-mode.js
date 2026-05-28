@@ -20,10 +20,6 @@ const CUSTOM_DAILY_QUEUE = {
     // Example: "2026-05-23": "3031"
 };
 
-// ============================================
-// SEEDED RANDOM GENERATOR
-// ============================================
-
 function seededRandom(seed) {
     // Use multiply-shift-mix for consistent hashing across all browsers
     const x = Math.sin(seed) * 10000;
@@ -47,6 +43,40 @@ function getConsistentDailyItemId() {
     const index = Math.floor(randomValue * validItems.length);
     
     return validItems[index].id;
+}
+
+// ============================================
+// DATE & TIMEZONE UTILITIES
+// ============================================
+
+/**
+ * Get current EST date string in YYYY-MM-DD format
+ * This ensures all users get the same daily item regardless of their timezone
+ */
+function getCurrentESTDate() {
+    // Get current time
+    const now = new Date();
+    
+    // Convert to EST (UTC-5)
+    // Note: We use UTC-5 regardless of DST to keep the game consistent year-round
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const estOffset = -5 * 60 * 60000; // EST is UTC-5
+    const estTime = new Date(utcTime + estOffset);
+    
+    const year = estTime.getUTCFullYear();
+    const month = String(estTime.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(estTime.getUTCDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+}
+
+/**
+ * Calculate day number since game started
+ */
+function getDayNumber(dateString) {
+    const currentDate = new Date(dateString + 'T00:00:00-05:00');
+    const daysDiff = Math.floor((currentDate - GAME_START_DATE) / (1000 * 60 * 60 * 24));
+    return daysDiff + 1; // Start from day 1
 }
 
 // ============================================
