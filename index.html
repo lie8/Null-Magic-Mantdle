@@ -5,6 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Null-Magic Mantdle - Daily Mode</title>
     <link rel="stylesheet" href="styles/main.css">
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+  import { doc, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCM4MR29B792Sp19C0UyJ8x1PET6MaEWRI",
+    authDomain: "null-magic-mantdle.firebaseapp.com",
+    projectId: "null-magic-mantdle",
+    storageBucket: "null-magic-mantdle.firebasestorage.app",
+    messagingSenderId: "942446086455",
+    appId: "1:942446086455:web:85b121a03490f0d2d932b2",
+    measurementId: "G-M4QPRZ603F"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Make Firebase available globally
+  window.db = db;
+  window.firebaseImports = { doc, getDoc, setDoc, increment };
+</script>
 </head>
 <body>
     <div class="game-container">

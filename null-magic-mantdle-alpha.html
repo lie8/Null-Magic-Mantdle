@@ -264,9 +264,9 @@
             <h1 style="margin: 0;">Null-Magic Mantdle</h1>
             <div class="header-toolbar">
                 <select id="modeSelect" class="mode-dropdown" onchange="location = this.value;">
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/" > ☀️ Daily Mode  </option>
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/infinite-mode.html"> ♾️ Infinite Mode</option>
-                    <option value="https://lie8.github.io/Null-Magic-Mantdle/null-magic-mantdle-alpha.html" selected>📜 Old Alpha Version (Current) </option>
+                    <option value="https://null-magic-mantdle.lie8.workers.dev/" > ☀️ Daily Mode  </option>
+                    <option value="https://null-magic-mantdle.lie8.workers.dev/infinite-mode.html"> ♾️ Infinite Mode</option>
+                    <option value="https://null-magic-mantdle.lie8.workers.dev/null-magic-mantdle-alpha.html" selected>📜 Old Alpha Version (Current) </option>
                 </select>                
                 
 
@@ -716,26 +716,7 @@ if (JSON.stringify(guess.class.sort()) === JSON.stringify(secretItem.class.sort(
     }
 }
 
-const toggleDevBtn = document.getElementById('toggleDevBtn');
-const devPanel = document.getElementById('devPanel');
-const resetBtn = document.getElementById('resetBtn');
 
-toggleDevBtn.addEventListener('click', () => {
-    if (devPanel.style.display === 'flex') {
-        devPanel.style.display = 'none';
-        toggleDevBtn.style.borderColor = '#3c3c41';
-        toggleDevBtn.style.color = '#a0a0a0';
-    } else {
-        const challenge = prompt("Enter Password to unlock developer diagnostics panel:");
-        if (challenge === "teemo123") {
-            devPanel.style.display = 'flex';
-            toggleDevBtn.style.borderColor = '#c8aa6e';
-            toggleDevBtn.style.color = '#c8aa6e';
-        } else if (challenge !== null) {
-            alert("Access Denied.");
-        }
-    }
-});
 
 resetBtn.addEventListener('click', () => {
     pickWeightedSecretItem();
