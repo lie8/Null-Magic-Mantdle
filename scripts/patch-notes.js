@@ -7,23 +7,21 @@ const PATCH_NOTES = [
     {
         version: "Future Plans/Ideas",
         changes: [
-            "Better domain",
             "Better Background and Graphics",,
             "Better Mobile Support",
             "Gamemode with arena/aram items/augments?",
-            "Gamemode for runes?"
+            "Gamemode for runes?",
+            "Support for different languages"
         ]
     },
-       {
-        version: "v1.1.3",
-        changes: [
-            "Made browser icon the null-magic mantdle",
-        ]
-    },
+
     {
         version: "v1.1.2",
         changes: [
             "Updated to league patch 16.11.1 (updated imperial mandate recipe)",
+            "Made browser icon the null-magic mantdle",
+            "Updated domain name"
+
         ]
     },
                 {
