@@ -14,6 +14,12 @@ const PATCH_NOTES = [
             "Gamemode for runes?"
         ]
     },
+       {
+        version: "v1.1.3",
+        changes: [
+            "Made browser icon the null-magic mantdle",
+        ]
+    },
     {
         version: "v1.1.2",
         changes: [
