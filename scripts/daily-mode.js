@@ -12,10 +12,11 @@ let gameEnded = false;
 let userAttemptsMatrix = [];
 
 // Game start date for day number calculation
-const GAME_START_DATE = new Date('2026-05-29T00:00:00-05:00'); // May 29, 2026 EST
+const GAME_START_DATE = new Date('2026-05-28T00:00:00-05:00'); // May 27, 2026 EST
 
 // Manual queue for specific daily items
 const CUSTOM_DAILY_QUEUE = {
+    "2026-05-029": "8010"
     // Format: "YYYY-MM-DD": "ItemID"
     // Example: "2026-05-23": "3031"
 };
