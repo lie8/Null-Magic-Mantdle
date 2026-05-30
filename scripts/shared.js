@@ -40,7 +40,7 @@ const ITEM_GROUP_MAP = {
     "Potion": ["Health Potion", "Refillable Potion"],
     "Quicksilver": ["Mercurial Scimitar", "Quicksilver Sash"],
     "Sightstone": ["Watchful Wardstone", "Vigilant Wardstone"],
-    "Spellblade": ["Sheen", "Bloodsong", "Iceborn Gauntlet", "Lich Bane", "Trinity Force", "Dusk and Dawn"],
+    "Spellblade": ["Sheen", "Bloodsong", "Iceborn Gauntlet", "Lich Bane", "Trinity Force", "Dusk and Dawn", "Essence Reaver"],
     "Starter": ["Doran's Blade", "Doran's Ring", "Doran's Shield", "Gustwalker Hatchling", "Mosstomper Seedling", "Scorchclaw Pup", "World Atlas", "Runic Compass"],
     "Stasis": ["Seeker's Armguard", "Shattered Armguard", "Zhonya's Hourglass"]
 };
