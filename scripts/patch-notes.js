@@ -14,7 +14,13 @@ const PATCH_NOTES = [
             "Support for different languages"
         ]
     },
-
+    {
+        version: "v1.1.3",
+        changes: [
+            "Fixed Umbral Glaive not being in the item pool - ty Odell74"
+        ]
+    },
+       
     {
         version: "v1.1.2",
         changes: [

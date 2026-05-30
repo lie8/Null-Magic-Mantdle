@@ -50,7 +50,7 @@ const ITEM_CLASS_MAPS = {
     Support: ["Abyssal Mask", "Ardent Censer", "Chemtech Putrifier", "Dawncore", "Echoes of Helia", "Frozen Heart", "Imperial Mandate", "Knight's Vow", "Locket of the Iron Solari", "Mikael's Blessing", "Moonstone Renewer", "Redemption", "Rite of Ruin", "Shurelya's Battlesong", "Staff of Flowing Water", "Sword of Blossoming Dawn", "Thornmail", "Wordless Promise", "Zeke's Convergence", "Whispering Circlet", "Morellonomicon", "Bandlepipes"],
     Tank: ["Abyssal Mask", "Anathema's Chains", "Bloodletter's Curse", "Dead Man's Plate", "Force of Nature", "Frozen Heart", "Heartsteel", "Hollow Radiance", "Iceborn Gauntlet", "Jak'Sho, The Protean", "Kaenic Rookern", "Knight's Vow", "Locket of the Iron Solari", "Overlord's Bloodmail", "Randuin's Omen", "Spirit Visage", "Sterak's Gage", "Sunfire Aegis", "Thornmail", "Titanic Hydra", "Trailblazer", "Unending Despair", "Warmog's Armor", "Winter's Approach", "Zeke's Convergence", "Bandlepipes", "Protoplasm Harness"],
     Marksman: ["Atma's Reckoning", "Blade of the Ruined King", "Bloodthirster", "Essence Reaver", "Guardian Angel", "Guinsoo's Rageblade", "Immortal Shieldbow", "Infinity Edge", "Kraken Slayer", "Lord Dominik's Regards", "Manamune", "Maw of Malmortius", "Mercurial Scimitar", "Mortal Reminder", "Nashor's Tooth", "Navori Flickerblade", "Phantom Dancer", "Rapid Firecannon", "Runaan's Hurricane", "Statikk Shiv", "Terminus", "The Collector", "Wit's End", "Yun Tal Wildarrows", "Zephyr", "Stormrazor", "Fiendhunter Bolts", "Hexoptics C44"],
-    Assassin: ["Axiom Arc", "Chempunk Chainsword", "Edge of Night", "Guardian Angel", "Hellfire Hatchet", "Hextech Gunblade", "Hubris", "Manamune", "Maw of Malmortius", "Opportunity", "Profane Hydra", "Serpent's Fang", "Serylda's Grudge", "Spectral Cutlass", "The Collector", "Voltaic Cyclosword", "Youmuu's Ghostblade", "Bastionbreaker"],
+    Assassin: ["Axiom Arc", "Umbral Glaive", "Chempunk Chainsword", "Edge of Night", "Guardian Angel", "Hellfire Hatchet", "Hextech Gunblade", "Hubris", "Manamune", "Maw of Malmortius", "Opportunity", "Profane Hydra", "Serpent's Fang", "Serylda's Grudge", "Spectral Cutlass", "The Collector", "Voltaic Cyclosword", "Youmuu's Ghostblade", "Bastionbreaker"],
     Fighter: ["Atma's Reckoning", "Black Cleaver", "Blade of the Ruined King", "Chempunk Chainsword", "Death's Dance", "Dead Man's Plate", "Eclipse", "Experimental Hexplate", "Guardian Angel", "Hullbreaker", "Iceborn Gauntlet", "Manamune", "Maw of Malmortius", "Overlord's Bloodmail", "Ravenous Hydra", "Spear of Shojin", "Sterak's Gage", "Stridebreaker", "Sundered Sky", "Terminus", "Titanic Hydra", "Trinity Force", "Wit's End", "Zephyr", "Dusk and Dawn", "Endless Hunger", "Bloodthirster"]
 };
 
@@ -61,6 +61,10 @@ const EXCLUDED_ARENA_NAMES = ["Prismatic", "Anima Visage", "Perplexity", "Rite o
 const CUSTOM_EXCLUDED_ITEMS = new Set(["Black Hole Gauntlet", "Cloak of Starry Night", "Crown of the Shattered Queen", "Cruelty", "Darksteel Talons", "Decapitator", "Demon King's Crown", "Demonic Embrace", "Detonation Orb", "Diamond-Tipped Spear", "Divine Sunderer", "Dragonheart", "Duskblade of Draktharr", "Eleisa's Miracle", "Empyrean Promise", "Everfrost", "Flesheater", "Force of Entropy", "Fulmination", "Galeforce", "Gambler's Blade", "Gargoyle Stoneplate", "Goredrinker", "Hamstringer", "Hemomancer's Helm", "Hexbolt Companion", "Innervating Locket", "Kinkou Jitte", "Lightning Rod", "Mirage Blade", "Moonflair Spellblade", "Night Harvester", "Prowler's Claw", "Puppeteer", "Pyromancer's Cloak", "Radiant Virtue", "Reality Fracture", "Reaper's Toll", "Regicide", "Reverberation", "Runecarver", "Sanguine Gift", "Shield of Molten Stone", "Sword of the Divine", "Talisman of Ascension", "Turbo Chemtank", "Twilight's Edge", "Twin Mask", "Veigar's Talisman of Ascension"]);
 
 const EXCLUDED_NAME_KEYWORDS = ["AHR-", "Gangplank Placeholder", "Rune Weaver", "Bounty", "Scorchclaw", "Gustwalker", "Mosstomper", "Guardian's "];
+
+const FORCE_INCLUDE_ITEMS = new Set([
+    "Umbral Glaive" 
+]);
 
 const SEARCH_SHORTCUTS = {
     "bork": "bladeoftheruinedking",
@@ -158,6 +162,8 @@ function shouldExcludeItem(details, data) {
     const tags = details.tags || [];
     const descLower = details.description ? details.description.toLowerCase() : "";
 
+    if (FORCE_INCLUDE_ITEMS.has(itemName)) return false;
+
     // Core API flags
     if (!details.maps || details.maps["11"] !== true) return true;
     if (details.inStore === false || details.hideFromAll === true) return true;
@@ -197,7 +203,6 @@ function shouldExcludeItem(details, data) {
 
     return false;
 }
-
 function determineItemTier(itemName, totalGold, tags, itemClasses, details) {
     if (itemName.includes("Doran's")) return "Starter";
     if (!itemClasses.includes("Boots") && !itemClasses.includes("N/A")) return "Legendary";
