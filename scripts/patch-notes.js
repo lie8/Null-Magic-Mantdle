@@ -17,7 +17,8 @@ const PATCH_NOTES = [
     {
         version: "v1.1.3",
         changes: [
-            "Fixed Umbral Glaive not being in the item pool - ty Odell74"
+            "Fixed Umbral Glaive not being in the item pool - ty Odell74",
+            "Fixed Essence Reaver not being spellblade - ty Different-Wolf-8634"
         ]
     },
        
