@@ -18,6 +18,7 @@
                     <option value="https://null-magic-mantdle.org/">☀️ Daily Mode</option>
                     <option value="https://null-magic-mantdle.org/infinite-mode" selected>♾️ Infinite Mode (Current)</option>
                 </select>
+                <button id="openStatsBtn" class="toolbar-btn">📊 Stats</button>
                 <button id="patchNotesBtn" class="patch-btn">📜 Patch Notes</button>
                 <button id="openSettingsBtn" class="settings-btn">⚙️</button>
             </div>
@@ -145,7 +146,7 @@
                     <span class="slider"></span>
                 </label>
             </div>
-
+            
             <div class="setting-row">
                 <span class="setting-label">
                     <b>Show Color Legend</b><br>
@@ -155,10 +156,54 @@
                     <input type="checkbox" id="legendToggle" checked>
                     <span class="slider"></span>
                 </label>
+                
+            </div>
+            <div class="setting-row">
+    <span class="setting-label">
+        <b>Show Rarity Badges in Search</b><br>
+        <small style="color:#a0a0a0;">Enables a badge that shows item rarity in search suggestions</small>
+    </span>
+    <label class="switch">
+            <input type="checkbox" id="showTierBadgeToggle">
+                <span class="slider"></span>
+                </label>
             </div>
         </div>
     </div>
+    <div id="statsModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Infinite Mode Statistics</h2>
+            <button id="closeStatsBtn" class="close-modal-btn">&times;</button>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stats-card">
+                <span id="statPlayed" class="stats-number">0</span>
+                <span class="stats-label">Played</span>
+            </div>
+            <div class="stats-card">
+                <span id="statCurrStreak" class="stats-number">0</span>
+                <span class="stats-label">Current Streak</span>
+            </div>
+            <div class="stats-card">
+                <span id="statMaxStreak" class="stats-number">0</span>
+                <span class="stats-label">Max Streak</span>
+            </div>
+            <div class="stats-card">
+                <span id="statAvgGuesses" class="stats-number">0</span>
+                <span class="stats-label">Avg Guesses</span>
+            </div>
+        </div>
 
+        <div class="stats-grid" style="grid-template-columns: repeat(1, 1fr); margin-top: 10px;">
+            <div class="stats-card">
+                <span id="statOneGuess" class="stats-number">0</span>
+                <span class="stats-label">One Guess Wins</span>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- Patch Notes Modal -->
     <div id="patchNotesModal" class="modal-overlay">
         <div class="modal-content">
