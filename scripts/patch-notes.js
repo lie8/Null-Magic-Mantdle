@@ -15,10 +15,26 @@ const PATCH_NOTES = [
         ]
     },
     {
+        version: "v1.2.0",
+        changes: [
+            "Autofill suggestions now shows all items instead of only 8 at a time",
+            "Keyboard only playability added (can select items from  autofill suggestions using up down arrows and enter)",
+            "Added setting to add badge with item rarity in autofill suggestions",
+            "Stats button added to infinite mode with total games played and average guesses needed",
+            "Fixed bug where items with the same recipe (i.e. umbral and hubris) wouldn't show green in components column if guessed",
+            "Fixed share button giving old link instead of new link",
+            "Added 'Give Up' button",
+            "Added Ko-fi link if you want to help support website",
+            "Thanks for all the feedback!"
+
+        ]
+    },
+    {
         version: "v1.1.3",
         changes: [
             "Fixed Umbral Glaive not being in the item pool - ty Odell74",
             "Fixed Essence Reaver not being spellblade - ty Different-Wolf-8634"
+
         ]
     },
        

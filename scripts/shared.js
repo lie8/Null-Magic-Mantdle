@@ -69,6 +69,7 @@ const FORCE_INCLUDE_ITEMS = new Set([
 const SEARCH_SHORTCUTS = {
     "bork": "bladeoftheruinedking",
     "botrk": "bladeoftheruinedking",
+    "bor": "bladeoftheruinedking",
     "dcap": "rabadonsdeathcap",
     "qss": "quicksilversash",
     "ldr": "lorddominiksregards",
@@ -393,27 +394,35 @@ function renderGuessRow(guess, secret, delay = 0) {
     delay += step;
 
     // Common Components
-    let recipeText = "";
-    let recipeClass = 'wrong';
-    if (guess.name === secret.name) {
-        recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-        recipeClass = 'correct';
-    } else if (secret.recipe.includes(guess.name)) {
-        recipeText = guess.name;
+let recipeText = "";
+let recipeClass = 'wrong';
+
+// Check if recipes are identical (same components - like Hubris & Umbral Glaive)
+const guessRecipeSorted = [...guess.recipe].sort().join(',');
+const secretRecipeSorted = [...secret.recipe].sort().join(',');
+
+if (guess.name === secret.name) {
+    recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
+    recipeClass = 'correct';
+} else if (guessRecipeSorted === secretRecipeSorted) {
+    // Same components but different item name (like Hubris for Umbral Glaive)
+    recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
+    recipeClass = 'correct'; // GREEN
+} else if (secret.recipe.includes(guess.name)) {
+    recipeText = guess.name;
+    recipeClass = 'partial';
+} else {
+    const sharedComponents = guess.recipe.filter(r => secret.recipe.includes(r));
+    if (sharedComponents.length > 0) {
+        recipeText = sharedComponents.join(', ');
         recipeClass = 'partial';
     } else {
-        const sharedComponents = guess.recipe.filter(r => secret.recipe.includes(r));
-        if (sharedComponents.length > 0) {
-            recipeText = sharedComponents.join(', ');
-            recipeClass = 'partial';
-        } else {
-            recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
-            recipeClass = 'wrong';
-        }
+        recipeText = guess.recipe.length > 0 ? guess.recipe.join(', ') : "Base Item";
+        recipeClass = 'wrong';
     }
-    row.appendChild(createAnimatedCell(`<span>${recipeText}</span>`, recipeClass, delay));
-    delay += step;
-
+}
+row.appendChild(createAnimatedCell(`<span>${recipeText}</span>`, recipeClass, delay));
+delay += step;
     // Item Group
     let groupClass = 'wrong';
     const guessGroup = (guess.group || "").trim().toLowerCase();
@@ -434,9 +443,14 @@ function renderGuessRow(guess, secret, delay = 0) {
 // ============================================
 
 function setupAutocomplete(inputElement, suggestionsElement, onSelect) {
+    let currentHighlightIndex = -1;
+    let filteredItems = [];
+
     inputElement.addEventListener('input', () => {
         const value = inputElement.value.toLowerCase().trim();
         suggestionsElement.innerHTML = '';
+        currentHighlightIndex = -1;
+        
         if (!value) return;
 
         const cleanValue = value.replace(/[\s'-]/g, '');
@@ -464,41 +478,106 @@ function setupAutocomplete(inputElement, suggestionsElement, onSelect) {
             return { item, score };
         });
 
-        const filtered = scoredItems
+        filteredItems = scoredItems
             .filter(match => match.score > 0)
             .sort((a, b) => {
                 if (a.score !== b.score) return a.score - b.score;
+                
+                const tierOrder = { "Legendary": 0, "Epic": 1, "Common": 2, "Starter": 3 };
+                const tierA = tierOrder[a.item.tier] ?? 99;
+                const tierB = tierOrder[b.item.tier] ?? 99;
+                if (tierA !== tierB) return tierA - tierB;
+                
                 return a.item.name.localeCompare(b.item.name);
             })
             .map(match => match.item);
 
-        filtered.slice(0, 8).forEach(item => {
+        filteredItems.forEach((item, index) => {
             const div = document.createElement('div');
             div.classList.add('suggestion-item');
+            div.dataset.index = index;
 
             const img = document.createElement('img');
             img.src = item.imgUrl;
 
             const span = document.createElement('span');
             span.textContent = item.name;
+            
+            // Show tier badge IF setting is enabled
+            const showBadges = localStorage.getItem('showTierBadges') === 'true';
+            if (showBadges) {
+                const tierBadge = document.createElement('span');
+                tierBadge.classList.add('tier-badge');
+                tierBadge.textContent = item.tier[0]; // L, E, C, S
+                tierBadge.style.marginLeft = '8px';
+                tierBadge.style.fontSize = '10px';
+                tierBadge.style.opacity = '0.6';
+                div.appendChild(tierBadge);
+            }
 
             div.appendChild(img);
             div.appendChild(span);
 
             div.addEventListener('click', () => {
-                onSelect(item);
-                inputElement.value = '';
-                suggestionsElement.innerHTML = '';
+                selectSuggestion(item, inputElement, suggestionsElement);
             });
+            
             suggestionsElement.appendChild(div);
         });
     });
 
-    document.addEventListener('click', (e) => {
-        if (e.target !== inputElement) {
-            suggestionsElement.innerHTML = '';
+    // Keyboard navigation
+    inputElement.addEventListener('keydown', (e) => {
+        const suggestions = suggestionsElement.querySelectorAll('.suggestion-item');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentHighlightIndex = Math.min(currentHighlightIndex + 1, suggestions.length - 1);
+            highlightSuggestion(suggestions, currentHighlightIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentHighlightIndex = Math.max(currentHighlightIndex - 1, -1);
+            if (currentHighlightIndex === -1) {
+                removeHighlight(suggestions);
+            } else {
+                highlightSuggestion(suggestions, currentHighlightIndex);
+            }
+        } else if (e.key === 'Enter' && currentHighlightIndex >= 0) {
+            e.preventDefault();
+            const selectedItem = filteredItems[currentHighlightIndex];
+            selectSuggestion(selectedItem, inputElement, suggestionsElement);
         }
     });
+
+    document.addEventListener('click', (e) => {
+        if (e.target !== inputElement && !suggestionsElement.contains(e.target)) {
+            suggestionsElement.innerHTML = '';
+            currentHighlightIndex = -1;
+        }
+    });
+}
+
+function highlightSuggestion(suggestions, index) {
+    removeHighlight(suggestions);
+    if (index >= 0 && index < suggestions.length) {
+        suggestions[index].classList.add('highlighted');
+        suggestions[index].scrollIntoView({ block: 'nearest' });
+    }
+}
+
+function removeHighlight(suggestions) {
+    suggestions.forEach(s => s.classList.remove('highlighted'));
+}
+
+function selectSuggestion(guess, inputElement, suggestionsElement) {
+    if (CURRENT_MODE === 'daily') {
+        submitDailyGuess(guess);
+    } else {
+        submitInfiniteGuess(guess);
+    }
+    
+    inputElement.value = '';
+    suggestionsElement.innerHTML = '';
 }
 
 // ============================================
@@ -525,8 +604,41 @@ function initSettings() {
             }
             localStorage.setItem('colorblindMode', isActive);
         });
+
+    }
+    const showTierBadgeToggle = document.getElementById('showTierBadgeToggle');
+    if (showTierBadgeToggle) {
+        const savedTierBadges = localStorage.getItem('showTierBadges');
+        showTierBadgeToggle.checked = savedTierBadges === 'true'; // Default false
+        
+        showTierBadgeToggle.addEventListener('change', () => {
+            localStorage.setItem('showTierBadges', showTierBadgeToggle.checked);
+        });
+    }
+    // Footer Links Toggle
+const showFooterToggle = document.getElementById('showFooterToggle');
+if (showFooterToggle) {
+    const savedFooter = localStorage.getItem('showFooterLinks');
+    showFooterToggle.checked = savedFooter !== 'false'; // Default true
+    
+    showFooterToggle.addEventListener('change', () => {
+        localStorage.setItem('showFooterLinks', showFooterToggle.checked);
+        updateFooterVisibility();
+    });
+    
+    // Update on page load
+    updateFooterVisibility();
+}
+
+function updateFooterVisibility() {
+    const footer = document.querySelector('.legal-footer');
+    if (footer) {
+        const showFooter = localStorage.getItem('showFooterLinks') !== 'false';
+        footer.style.display = showFooter ? 'block' : 'none';
     }
 }
+}
+
 
 function initModals() {
     // Settings modal

@@ -8,6 +8,7 @@
 // ============================================
 
 const STREAK_REQUIREMENT = 6; // Must win in 6 or fewer guesses to maintain streak
+let CURRENT_MODE = 'infinite';
 
 // ============================================
 // STORAGE MANAGEMENT
@@ -188,11 +189,13 @@ function submitInfiniteGuess(guess) {
 
                 if (totalGuessesCount <= STREAK_REQUIREMENT) {
                     history.currentStreak++;
+                    updateInfiniteStats(totalGuessesCount);
                     if (history.currentStreak > history.maxStreak) {
                         history.maxStreak = history.currentStreak;
                     }
                 } else {
                     history.currentStreak = 0;
+                    updateInfiniteStats(totalGuessesCount);
                     setTimeout(() => {
                         alert(`You found it! But since it took more than ${STREAK_REQUIREMENT} guesses, your streak has reset.`);
                     }, 500);
@@ -363,7 +366,82 @@ function makeElementDraggable(elmnt) {
         document.onmousemove = null;
     }
 }
+// ============================================
+// INFINITE MODE STATS
+// ============================================
 
+function getInfiniteStats() {
+    return JSON.parse(localStorage.getItem('stats_infinite')) || {
+        played: 0,
+        won: 0,
+        total_guesses: 0,
+        one_guess_wins: 0
+    };
+}
+
+function saveInfiniteStats(stats) {
+    localStorage.setItem('stats_infinite', JSON.stringify(stats));
+}
+
+function updateInfiniteStats(guesses) {
+    const stats = getInfiniteStats();
+    
+    stats.played++;
+    stats.won++;
+    stats.total_guesses += guesses;
+    
+    if (guesses === 1) {
+        stats.one_guess_wins++;
+    }
+    
+    saveInfiniteStats(stats);
+    updateStatsDisplay();
+}
+
+function updateStatsDisplay() {
+    const stats = getInfiniteStats();
+    const infiniteHistory = getInfiniteHistory();
+    
+    const avgGuesses = stats.won > 0 ? (stats.total_guesses / stats.won).toFixed(2) : 0;
+    
+    const elements = {
+        played: document.getElementById('statPlayed'),
+        currStreak: document.getElementById('statCurrStreak'),
+        maxStreak: document.getElementById('statMaxStreak'),
+        avgGuesses: document.getElementById('statAvgGuesses'),
+        oneGuess: document.getElementById('statOneGuess')
+    };
+    
+    if (elements.played) elements.played.textContent = stats.played;
+    if (elements.currStreak) elements.currStreak.textContent = infiniteHistory.currentStreak || 0;
+    if (elements.maxStreak) elements.maxStreak.textContent = infiniteHistory.maxStreak || 0;
+    if (elements.avgGuesses) elements.avgGuesses.textContent = avgGuesses;
+    if (elements.oneGuess) elements.oneGuess.textContent = stats.one_guess_wins;
+}
+
+function initStatsModal() {
+    const openStatsBtn = document.getElementById('openStatsBtn');
+    const statsModal = document.getElementById('statsModal');
+    const closeStatsBtn = document.getElementById('closeStatsBtn');
+    
+    if (openStatsBtn && statsModal && closeStatsBtn) {
+        openStatsBtn.addEventListener('click', () => {
+            updateStatsDisplay();
+            statsModal.style.display = 'flex';
+        });
+        
+        closeStatsBtn.addEventListener('click', () => {
+            statsModal.style.display = 'none';
+        });
+        
+        // Close on backdrop click
+        statsModal.addEventListener('click', (e) => {
+            if (e.target === statsModal) {
+                statsModal.style.display = 'none';
+            }
+        });
+    }
+}
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -378,7 +456,8 @@ async function initInfiniteMode() {
     initDevPanel();
     setupInfiniteControls();
     initDraggableLegend();
-
+    initStatsModal();
+    updateStatsDisplay();
     const input = document.getElementById('itemInput');
     const suggestions = document.getElementById('suggestions');
 

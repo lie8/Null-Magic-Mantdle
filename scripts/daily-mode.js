@@ -10,19 +10,18 @@
 let currentGuessesCount = 0;
 let gameEnded = false;
 let userAttemptsMatrix = [];
+let CURRENT_MODE = 'daily';
 
 // Game start date for day number calculation
 const GAME_START_DATE = new Date('2026-05-28T00:00:00-05:00'); // May 27, 2026 EST
 
 // Manual queue for specific daily items
 const CUSTOM_DAILY_QUEUE = {
-    "2026-05-30": "8010"
     // Format: "YYYY-MM-DD": "ItemID"
     // Example: "2026-05-23": "3031"
 };
 
 function seededRandom(seed) {
-    // Use multiply-shift-mix for consistent hashing across all browsers
     const x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
 }
@@ -36,9 +35,7 @@ function getShuffledTierPool(tierName, cycleNumber) {
     const tierItems = completeItemPool.filter(item => 
         item.tier === tierName && !CUSTOM_EXCLUDED_ITEMS.has(item.name)
     );
-    
-    // Create a unique seed for this tier and cycle
-    // Different cycle number = different shuffle order
+
     const tierSeed = 20260501 + (tierName === "Legendary" ? 1000 : tierName === "Epic" ? 2000 : 3000) + cycleNumber;
     
     // Shuffle this tier's items
@@ -56,13 +53,12 @@ function getDaysSinceGameStart() {
     const dayId = getCurrentESTDate();
     const currentDate = new Date(dayId + 'T00:00:00-05:00');
     const daysDiff = Math.floor((currentDate - GAME_START_DATE) / (1000 * 60 * 60 * 24));
-    return daysDiff; // 0 on May 1, 1 on May 2, etc.
+    return daysDiff; 
 }
 
 function getConsistentDailyItemId() {
     const daysSinceStart = getDaysSinceGameStart();
     
-    // Create a seed from the day to pick tier consistently
     const [year, month, day] = getCurrentESTDate().split('-').map(Number);
     const baseSeed = year * 10000 + month * 100 + day;
     
@@ -621,7 +617,7 @@ function generateShareText() {
         });
     }
 
-    const gameUrl = "https://null-magic-mantdle.lie8.workers.dev/";
+    const gameUrl = "https://null-magic-mantdle.org/";
     return `I found the NullMagicMantdle item #${dayNumber} in daily mode in ${currentGuessesCount} ${currentGuessesCount === 1 ? 'try' : 'tries'}!\n\n${blockGrid.trim()}\n\nPlay here: ${gameUrl}`;
 }
 
