@@ -772,3 +772,24 @@ input:checked + .slider:before {
     color: #c8aa6e;
     font-weight: bold;
 }
+
+.suggestion-item.highlighted {
+    background-color: #3c3c41;
+    outline: 1px solid #c8aa6e;
+}
+
+/* Tier badge */
+.tier-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(200, 170, 110, 0.2);
+    color: #c8aa6e;
+    font-weight: bold;
+}
+
+/* Max height for suggestion list */
+#suggestionsContainer {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
