@@ -19,6 +19,7 @@ const GAME_START_DATE = new Date('2026-05-28T00:00:00-05:00'); // May 27, 2026 E
 const CUSTOM_DAILY_QUEUE = {
     // Format: "YYYY-MM-DD": "ItemID"
     // Example: "2026-05-23": "3031"
+    "2026-05-31":"6610"
 };
 
 function seededRandom(seed) {
