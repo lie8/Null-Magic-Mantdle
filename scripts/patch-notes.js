@@ -15,6 +15,13 @@ const PATCH_NOTES = [
         ]
     },
     {
+        version: "v1.3.0",
+        changes: [
+            "Updated to League version 26.13.1 (updated Imperial Mandate recipe)"
+
+        ]
+    },
+    {
         version: "v1.2.0",
         changes: [
             "Autofill suggestions now shows all items instead of only 8 at a time",
