@@ -15,7 +15,14 @@ const PATCH_NOTES = [
         ]
     },
     {
-        version: "v1.3.0",
+        version: "v1.2.2",
+        changes: [
+            "Updated to League version 26.14.1 (updated Rocketbelt recipe)"
+
+        ]
+    },
+    {
+        version: "v1.2.1",
         changes: [
             "Updated to League version 26.13.1 (updated Imperial Mandate recipe)"
 
