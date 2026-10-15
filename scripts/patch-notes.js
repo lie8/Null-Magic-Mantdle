@@ -17,7 +17,7 @@ const PATCH_NOTES = [
         {
         version: "v1.2.3",
         changes: [
-            "Updated to League version 26.20.1"
+            "Updated to League version 26.20.1",
             "Super busy with college so project has been pushed to side"
 
         ]
