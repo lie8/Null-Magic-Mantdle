@@ -14,6 +14,14 @@ const PATCH_NOTES = [
             "Support for different languages"
         ]
     },
+        {
+        version: "v1.2.3",
+        changes: [
+            "Updated to League version 26.20.1"
+            "Super busy with college so project has been pushed to side"
+
+        ]
+    },
     {
         version: "v1.2.2",
         changes: [
