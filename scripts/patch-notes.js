@@ -7,7 +7,7 @@ const PATCH_NOTES = [
     {
         version: "Future Plans/Ideas",
         changes: [
-            "Better Background and Graphics",,
+            "Better Background and Graphics",
             "Better Mobile Support",
             "Gamemode with arena/aram items/augments?",
             "Gamemode for runes?",
